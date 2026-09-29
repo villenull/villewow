@@ -1,0 +1,9 @@
+{
+  "settings": {
+    "notifications": { "playSound": true },
+    "daemon": {
+      "manageBuiltInDaemon": true,
+      "keepRunningAfterQuit": true
+    }
+  }
+}
