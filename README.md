@@ -23,6 +23,7 @@ The script is safe to re-run, and each step can run on its own:
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
 | `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers) |
+| `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), including OpenCode agents launched by Paseo |
 | `paseo` | Latest [Paseo](https://paseo.sh) AppImage, FUSE, launcher entry, `paseo` command |
 | `paseo_settings` | Paseo tools and browser tools for agents, remote access via app.paseo.sh, keep daemon running after quit |
 | `paseo_skills` | Paseo's orchestration skills for Claude Code, Codex, OpenCode |

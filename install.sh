@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
 STOW_PACKAGES=(hypr omarchy vill)
 
@@ -129,6 +129,14 @@ step_clis() {
   done
 }
 
+# OpenCode approves every permission request (same as always passing --auto).
+# This also covers the OpenCode agents Paseo launches.
+step_opencode_settings() {
+  say "OpenCode: skip permission prompts"
+  merge_json ~/.config/opencode/opencode.json "$DOTFILES/opencode/opencode.json"
+  note "applied"
+}
+
 step_paseo() {
   say "Paseo (latest AppImage)"
   omarchy pkg add fuse2
@@ -176,18 +184,19 @@ EOF
 }
 
 # Merge our settings into Paseo's files, keeping everything else in them.
+# A missing file starts as $3 (default: {}).
 merge_json() {
-  local target=$1 ours=$2
+  local target=$1 ours=$2 initial=${3:-'{}'}
   mkdir -p "$(dirname "$target")"
-  [[ -s $target ]] || echo '{"version": 1}' >"$target"
+  [[ -s $target ]] || echo "$initial" >"$target"
   jq -s '.[0] * .[1]' "$target" "$ours" >"$target.tmp"
   mv "$target.tmp" "$target"
 }
 
 step_paseo_settings() {
   say "Paseo settings"
-  merge_json ~/.paseo/config.json "$DOTFILES/paseo/config.json"
-  merge_json ~/.config/Paseo/desktop-settings.json "$DOTFILES/paseo/desktop-settings.json"
+  merge_json ~/.paseo/config.json "$DOTFILES/paseo/config.json" '{"version": 1}'
+  merge_json ~/.config/Paseo/desktop-settings.json "$DOTFILES/paseo/desktop-settings.json" '{"version": 1}'
   chmod 600 ~/.paseo/config.json
   if paseo daemon status >/dev/null 2>&1; then
     paseo reload >/dev/null
