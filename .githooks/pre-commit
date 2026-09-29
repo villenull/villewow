@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Block commits that contain secrets.
+exec mise x gitleaks@latest -- gitleaks git --pre-commit --staged --redact --no-banner

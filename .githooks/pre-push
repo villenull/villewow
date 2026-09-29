@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Scan the whole history for secrets before anything leaves this machine.
+exec mise x gitleaks@latest -- gitleaks git --redact --no-banner
