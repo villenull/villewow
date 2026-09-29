@@ -1,12 +1,12 @@
-# dotfiles
+# villewow
 
-My setup on top of a fresh [Omarchy](https://omarchy.org/) install. It only
-holds what I change; Omarchy's own defaults stay Omarchy's.
+My dotfiles: my setup on top of a fresh [Omarchy](https://omarchy.org/)
+install. It only holds what I change; Omarchy's own defaults stay Omarchy's.
 
 ## Install
 
 ```bash
-git clone https://github.com/villenull/dotfiles ~/.dotfiles
+git clone https://github.com/villenull/villewow ~/.dotfiles
 ~/.dotfiles/install.sh
 ```
 
