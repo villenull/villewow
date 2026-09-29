@@ -36,7 +36,7 @@ What's left afterwards: Chromium, Files, the image viewer, Ghostty and Paseo.
 ## Configs (`stow/`)
 
 - `hypr` — mouse speed
-- `omarchy` — hides Learn, Trigger and Style from the Omarchy menu
+- `omarchy` — hides Learn, Trigger, Style and About from the Omarchy menu
 - `vill` — `/vill`, my Paseo orchestrator brief, as a skill for Claude Code,
   Codex and OpenCode. Only runs when typed; subagents are told to refuse it.
 
