@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis paseo paseo_settings paseo_skills paseo_plugin shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
 STOW_PACKAGES=(hypr omarchy vill)
 
@@ -24,8 +24,6 @@ TEXT_MIME_TYPES=(text/plain text/markdown text/x-markdown text/x-shellscript app
 
 PASEO_APPIMAGE="$HOME/.local/opt/Paseo-x86_64.AppImage"
 PASEO_SKILLS=(paseo paseo-advisor paseo-committee paseo-handoff paseo-help paseo-plugin)
-PASEO_PLUGIN_ID=sub-usage
-PASEO_PLUGIN_SOURCE=github:villenull/paseo-sub-usage
 
 # id|git url
 SHELL_PLUGINS=(
@@ -205,17 +203,6 @@ step_paseo_skills() {
   for skill in "${PASEO_SKILLS[@]}"; do args+=(-s "$skill"); done
   mise x node@lts -- npx --yes skills add getpaseo/paseo -g -y \
     -a claude-code -a codex -a opencode "${args[@]}"
-}
-
-step_paseo_plugin() {
-  say "Paseo plugin: $PASEO_PLUGIN_ID"
-  if paseo plugin ls 2>/dev/null | grep -q "^$PASEO_PLUGIN_ID "; then
-    note "already installed"
-  elif ! GIT_TERMINAL_PROMPT=0 git ls-remote "https://github.com/${PASEO_PLUGIN_SOURCE#github:}" HEAD >/dev/null 2>&1; then
-    note "skipped: ${PASEO_PLUGIN_SOURCE#github:} isn't published yet"
-  else
-    paseo plugin install "$PASEO_PLUGIN_SOURCE"
-  fi
 }
 
 step_shell_plugins() {

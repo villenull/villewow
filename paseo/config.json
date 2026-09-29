@@ -1,10 +1,21 @@
 {
   "daemon": {
-    "mcp": { "injectIntoAgents": true },
-    "browserTools": { "enabled": true },
-    "cors": { "allowedOrigins": ["https://app.paseo.sh"] },
-    "relay": { "enabled": true }
+    "mcp": {
+      "injectIntoAgents": true
+    },
+    "browserTools": {
+      "enabled": true
+    },
+    "cors": {
+      "allowedOrigins": [
+        "https://app.paseo.sh"
+      ]
+    },
+    "relay": {
+      "enabled": true
+    }
   },
-  "app": { "baseUrl": "https://app.paseo.sh" },
-  "pluginsEnabled": true
+  "app": {
+    "baseUrl": "https://app.paseo.sh"
+  }
 }

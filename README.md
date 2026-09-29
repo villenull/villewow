@@ -26,7 +26,6 @@ The script is safe to re-run, and each step can run on its own:
 | `paseo` | Latest [Paseo](https://paseo.sh) AppImage, FUSE, launcher entry, `paseo` command |
 | `paseo_settings` | Paseo tools and browser tools for agents, remote access via app.paseo.sh, keep daemon running after quit |
 | `paseo_skills` | Paseo's orchestration skills for Claude Code, Codex, OpenCode |
-| `paseo_plugin` | My sub-usage Paseo plugin (skipped until it's published) |
 | `shell_plugins` | Omarchy shell plugins: OpenCode Go Watcher, System Monitor, Mimarchy |
 | `auth` | Guided logins: Google (Chromium), GitHub, Claude, OpenCode |
 | `drop_foot` | Removes Foot, last, so a terminal is always available |
