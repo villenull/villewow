@@ -39,6 +39,9 @@ What's left afterwards: Chromium, Files, the image viewer, Ghostty and Paseo.
 - `omarchy` — hides Learn, Trigger, Style and About from the Omarchy menu
 - `vill` — `/vill`, my Paseo orchestrator brief, as a skill for Claude Code,
   Codex and OpenCode. Only runs when typed; subagents are told to refuse it.
+- `villnext` — `/villnext`, run right after `/vill`: the orchestrator proposes
+  what to work on next, favoring parallel work for free subagents, and waits
+  for my go-ahead.
 
 ## Omarchy shell plugins
 

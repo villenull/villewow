@@ -13,7 +13,7 @@ STEPS=(terminal debloat link chromium text_files clis opencode_settings paseo pa
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
-STOW_SKILLS=(vill)
+STOW_SKILLS=(vill villnext)
 
 REMOVE_PKGS=(
   evince gnome-disk-utility localsend mpv mpv-mpris nvim omarchy-nvim
@@ -99,10 +99,12 @@ step_link() {
   stow -d "$DOTFILES/stow" -t "$HOME" -R "${STOW_SKILLS[@]}"
 
   # Claude Code and Codex read skills from their own folders.
-  local dir
+  local dir skill
   for dir in ~/.claude/skills ~/.codex/skills; do
     mkdir -p "$dir"
-    ln -sfn ~/.agents/skills/vill "$dir/vill"
+    for skill in "${STOW_SKILLS[@]}"; do
+      ln -sfn ~/.agents/skills/"$skill" "$dir/$skill"
+    done
   done
 
   git -C "$DOTFILES" config core.hooksPath .githooks
