@@ -11,7 +11,9 @@ DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 STEPS=(terminal debloat link chromium text_files clis opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
-STOW_PACKAGES=(hypr omarchy vill)
+# Linked file by file. Skill folders are linked whole (see step_link).
+STOW_PACKAGES=(hypr omarchy)
+STOW_SKILLS=(vill)
 
 REMOVE_PKGS=(
   evince gnome-disk-utility localsend mpv mpv-mpris nvim omarchy-nvim
@@ -65,23 +67,36 @@ step_debloat() {
   omarchy pkg drop "${REMOVE_PKGS[@]}"
 }
 
+# Move $HOME/$1 aside as .bak.$2, unless it is missing, a link, or already
+# resolves into this repo.
+backup_unless_ours() {
+  local rel=$1 stamp=$2 target="$HOME/$1"
+  [[ -e $target && ! -L $target ]] || return 0
+  [[ $(realpath "$target") == "$DOTFILES"/* ]] && return 0
+  mv "$target" "$target.bak.$stamp"
+  note "kept your old $rel as $rel.bak.$stamp"
+}
+
 # Link configs into place. Existing files are kept as <file>.bak.<time>.
 step_link() {
   say "Linking configs with Stow"
   has stow || omarchy pkg add stow
 
-  local pkg rel target stamp
+  local pkg rel stamp
   stamp=$(date +%s)
   for pkg in "${STOW_PACKAGES[@]}"; do
     while IFS= read -r rel; do
-      target="$HOME/$rel"
-      if [[ -e $target && ! -L $target ]]; then
-        mv "$target" "$target.bak.$stamp"
-        note "kept your old $rel as $rel.bak.$stamp"
-      fi
+      backup_unless_ours "$rel" "$stamp"
     done < <(cd "$DOTFILES/stow/$pkg" && find . -type f -printf '%P\n')
   done
+  for pkg in "${STOW_SKILLS[@]}"; do
+    backup_unless_ours ".agents/skills/$pkg" "$stamp"
+  done
+  # Link files one by one, except skill folders: OpenCode ignores symlinked
+  # SKILL.md files, so that one folder is linked whole.
+  mkdir -p ~/.agents/skills
   stow --no-folding -d "$DOTFILES/stow" -t "$HOME" -R "${STOW_PACKAGES[@]}"
+  stow -d "$DOTFILES/stow" -t "$HOME" -R "${STOW_SKILLS[@]}"
 
   # Claude Code and Codex read skills from their own folders.
   local dir
