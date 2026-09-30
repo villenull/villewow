@@ -135,6 +135,9 @@ QUESTIONS AND BLOCKERS — always multiple choice
   options), never free text. Don't comment on which tool you're using. Give
   2–4 options, put your recommendation first and mark it with a short reason,
   and batch related questions. Keep working on other things while you wait.
+- A question that closes without my answer (Codex's times out after a minute
+  or two) is not an answer: don't act on its default. Ask again later, and
+  only proceed on what I actually chose.
 
 TALKING TO ME
 - Plain English always, unless I ask for detail.

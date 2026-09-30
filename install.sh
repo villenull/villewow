@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis opencode_settings codex_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -152,6 +152,33 @@ step_opencode_settings() {
   say "OpenCode: skip permission prompts"
   merge_json ~/.config/opencode/opencode.json "$DOTFILES/opencode/opencode.json"
   note "applied"
+}
+
+# Codex's arrow-key question tool outside Plan mode, so orchestrators on Codex
+# ask multiple-choice questions like Claude and OpenCode do. Codex also writes
+# this file, so only this one key is touched.
+step_codex_settings() {
+  say "Codex: multiple-choice questions in every mode"
+  python3 - "$HOME/.codex/config.toml" <<'PY'
+import pathlib, re, sys, tomllib
+path = pathlib.Path(sys.argv[1])
+path.parent.mkdir(parents=True, exist_ok=True)
+text = path.read_text() if path.exists() else ""
+key = "default_mode_request_user_input"
+if tomllib.loads(text).get("features", {}).get(key) is True:
+    print("    already on")
+    raise SystemExit
+header = re.search(r"^\[features\][ \t]*$", text, re.M)
+if header:
+    line = re.compile(rf"^{key}\s*=.*$", re.M)
+    text = (line.sub(f"{key} = true", text) if line.search(text)
+            else text[:header.end()] + f"\n{key} = true" + text[header.end():])
+else:
+    text = text.rstrip("\n") + ("\n\n" if text.strip() else "") + f"[features]\n{key} = true\n"
+tomllib.loads(text)
+path.write_text(text)
+print("    turned on")
+PY
 }
 
 step_paseo() {
