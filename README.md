@@ -69,3 +69,7 @@ Installed from GitHub and enabled by the `shell_plugins` step:
 Nothing personal lives here: no tokens, keys or logins. A
 [gitleaks](https://github.com/gitleaks/gitleaks) hook scans every commit and
 push (`git config core.hooksPath .githooks`, set by the `link` step).
+
+## License
+
+[MIT](LICENSE)
