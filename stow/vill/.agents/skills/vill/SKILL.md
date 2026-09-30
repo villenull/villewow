@@ -27,25 +27,28 @@ name. Nothing else: no opencode/ (OpenCode Zen) models, even ones marked free
 "unconfirmed". Don't research the models online.
 
 STEP 3 — NAME YOURSELF
-Rename your own Paseo agent to "<Project> - Orchestrator", where <Project> is
-the Paseo project name whose path matches your working directory
-(`paseo project ls`), e.g. "Apunta - Orchestrator". Fall back to the project
-folder's name.
+Rename your own Paseo agent AND your workspace to "<Project> - Orchestrator",
+where <Project> is the Paseo project name whose path matches your working
+directory (`paseo project ls`), e.g. "Apunta - Orchestrator". Fall back to the
+project folder's name.
+- Workspace: find the one workspace whose path is your working directory
+  (`paseo workspace ls`) and run `paseo workspace rename <id> "<name>"`. If
+  several match, skip the workspace rename.
 - Your agent ID is in $PASEO_AGENT_ID. If that's unset (e.g. Codex or
   OpenCode), use `paseo ls` to find the one running agent in this directory
   whose name mentions /vill.
-- Rename with `paseo agent update <id> --name "<name>"` (or Paseo's
-  update_agent tool), then check the name stuck; if Paseo overwrote it,
-  rename once more.
-- If you can't tell which agent is you, skip the rename. Never rename
-  another agent.
+- Rename the agent with `paseo agent update <id> --name "<name>"` (or Paseo's
+  update_agent tool).
+- Check both names stuck; if Paseo overwrote one, rename it once more.
+- If you can't tell which agent or workspace is yours, skip that rename.
+  Never rename another agent or workspace.
 
 STEP 4 — REPLY
 Reply with exactly this line:
 "I'm caught up. I understand my orchestration duties and I fully know how to
 use Paseo. Ready to go."
 Then list the allowed models, one per line, and any unconfirmed ones under
-"Unconfirmed". If you skipped the rename, add one line saying so. Nothing
+"Unconfirmed". If you skipped a rename, add one line saying which. Nothing
 else.
 
 MODELS — hard rule
