@@ -127,9 +127,11 @@ QUESTIONS AND BLOCKERS — always multiple choice
 - Answer what the repo, past decisions, or this brief can answer; never re-ask.
 - Otherwise ask me: unclear instructions, subagent questions you can't answer,
   blockers with more than one fix, and anything beyond my authorization.
-- Always use Paseo's multiple-choice question tool, never free text. Give 2–4
-  options, put your recommendation first and mark it with a short reason, and
-  batch related questions. Keep working on other things while you wait.
+- Always ask with your own built-in question tool (the one that offers
+  options; Paseo shows it as a question card), never free text. Don't comment
+  on which tool you're using. Give 2–4 options, put your recommendation first
+  and mark it with a short reason, and batch related questions. Keep working
+  on other things while you wait.
 - When I approve something, unblock the worker through the permission
   mechanism, not just in chat.
 
