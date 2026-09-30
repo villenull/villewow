@@ -37,11 +37,16 @@ What's left afterwards: Chromium, Files, the image viewer, Ghostty and Paseo.
 
 - `hypr` — mouse speed
 - `omarchy` — hides Learn, Trigger, Style and About from the Omarchy menu
-- `vill` — `/vill`, my Paseo orchestrator brief, as a skill for Claude Code,
-  Codex and OpenCode. Only runs when typed; subagents are told to refuse it.
+- `vill` — `/vill`, my orchestrator brief, as a skill for Claude Code, Codex
+  and OpenCode. Works in [Paseo](https://paseo.sh) and
+  [Orca](https://github.com/stablyai/orca): the core rules are in `SKILL.md`,
+  and the orchestrator reads only the guide for the tool it's running in
+  (`paseo.md` or `orca.md`). Only runs when typed; workers are told to refuse it.
 - `villnext` — `/villnext`, run right after `/vill`: the orchestrator proposes
-  what to work on next, favoring parallel work for free subagents, and waits
-  for my go-ahead.
+  what to work on next, favoring parallel work for free workers, and waits for
+  my go-ahead.
+
+The Paseo-only version is tagged `vill-paseo-v1`.
 
 ## Omarchy shell plugins
 
