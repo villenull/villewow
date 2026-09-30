@@ -62,10 +62,15 @@ settled; follow its rules exactly on top of the brief.
   and I don't want that unless I explicitly ask. The only alternative to
   releasing is Orca's same-terminal reuse, and only when you dispatch the
   worker's follow-up task right away.
-- Before ending a turn, both of these must return nothing (release anything
-  they list): `orca orchestration worker-list --terminal-state reclaimable
-  --json` and `orca orchestration worker-list --terminal-state retained
-  --json`.
+- If I click or type into a worker's tab, Orca hands that tab to me
+  (`retainedReason: user_takeover`) and `worker-release` will never close it.
+  Once that worker has finished and you've read its report, close the tab
+  yourself: `orca terminal close --terminal <agentTerminalHandle> --tab
+  --json`. Only finished workers — never one that's still running.
+- Before ending a turn, both of these must return nothing: `orca
+  orchestration worker-list --terminal-state reclaimable --json` (release
+  them) and `orca orchestration worker-list --terminal-state retained --json`
+  (close finished ones as above).
 - Never stop, abandon or retry a worker without Orca's positive proof that it
   exited; absence of news is not proof.
 
