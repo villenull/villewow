@@ -27,13 +27,13 @@ name. Nothing else: no opencode/ (OpenCode Zen) models, even ones marked free
 "unconfirmed". Don't research the models online.
 
 STEP 3 — NAME YOURSELF
-Rename your own Paseo agent AND your workspace to "<Project> - Orchestrator",
-where <Project> is the Paseo project name whose path matches your working
-directory (`paseo project ls`), e.g. "Apunta - Orchestrator". Fall back to the
-project folder's name.
+Rename your own Paseo agent to "<Project> - Orchestrator" and your workspace
+to "<Project> - Main", where <Project> is the Paseo project name whose path
+matches your working directory (`paseo project ls`), e.g. "Apunta -
+Orchestrator" and "Apunta - Main". Fall back to the project folder's name.
 - Workspace: find the one workspace whose path is your working directory
-  (`paseo workspace ls`) and run `paseo workspace rename <id> "<name>"`. If
-  several match, skip the workspace rename.
+  (`paseo workspace ls`) and run `paseo workspace rename <id> "<Project> -
+  Main"`. If several match, skip the workspace rename.
 - Your agent ID is in $PASEO_AGENT_ID. If that's unset (e.g. Codex or
   OpenCode), use `paseo ls` to find the one running agent in this directory
   whose name mentions /vill.
