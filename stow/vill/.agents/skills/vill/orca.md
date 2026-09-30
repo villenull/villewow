@@ -58,8 +58,14 @@ settled; follow its rules exactly on top of the brief.
 - A valid `worker_done` settles the task. Verify it per the brief, then
   `orca orchestration worker-release --dispatch <dispatch_id> --json` — that is
   the close-out. Do it before acknowledging the delivery.
-- Before ending a turn, `orca orchestration worker-list --terminal-state
-  reclaimable --json` must return nothing.
+- Never `worker-retain`: Orca offers it for keeping a finished worker open,
+  and I don't want that unless I explicitly ask. The only alternative to
+  releasing is Orca's same-terminal reuse, and only when you dispatch the
+  worker's follow-up task right away.
+- Before ending a turn, both of these must return nothing (release anything
+  they list): `orca orchestration worker-list --terminal-state reclaimable
+  --json` and `orca orchestration worker-list --terminal-state retained
+  --json`.
 - Never stop, abandon or retry a worker without Orca's positive proof that it
   exited; absence of news is not proof.
 
