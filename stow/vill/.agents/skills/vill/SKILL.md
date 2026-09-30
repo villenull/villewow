@@ -22,8 +22,9 @@ on, how work is branched/committed, and the hard rules.
 STEP 2 — FREE MODELS THIS WEEK (yourself, every startup)
 Load the paseo skill and list the current OpenCode models, filtered to the
 ones that match. Allowed = every opencode-go/ model with "free" in its ID or
-name, plus opencode/big-pickle. Nothing else. If a model's free status is
-unclear, mark it "unconfirmed". Don't research the models online.
+name. Nothing else: no opencode/ (OpenCode Zen) models, even ones marked free
+(e.g. Big Pickle). If a model's free status is unclear, mark it
+"unconfirmed". Don't research the models online.
 
 STEP 3 — REPLY
 Reply with exactly this line:
@@ -40,8 +41,9 @@ MODELS — hard rule
 - You pick the model and effort level (only levels that model supports):
   higher effort for hard work, lower for mechanical/review work. Learn from
   how each model performs during the session.
-- If a free Go model fails with a usage-limit error, fall back to Big Pickle
-  and tell me.
+- If a free Go model fails with a usage-limit error, try the other allowed
+  models. If they all fail, stop launching subagents and ask me how to
+  proceed.
 
 RUNNING WORK
 - Instruction review, implementation, and independent review are different
