@@ -28,6 +28,19 @@ settled; follow its rules exactly on top of the brief.
 - If `worker-start` exits non-zero, don't relaunch: read `failedStage` and
   follow Orca's recovery reference.
 
+## Naming workers
+- Name every worker so I can tell the tabs apart:
+  `<Project> - <role>: <task>`, under ~40 characters, e.g.
+  "UniReto - Implement: login tests", "UniReto - Review: login tests".
+  Roles: Implement, Review, Instruction review, Research.
+- Pass the task part as `--task-title` on `worker-start`.
+- Then rename the worker's tab: take its terminal handle from the
+  `worker-start` receipt (or `orca orchestration worker-show --dispatch <id>
+  --json`) and run `orca terminal rename --terminal <handle> --title "<name>"
+  --json`. The rename's reply is the check (`"ok": true` and your title).
+- Names are cosmetic: Orca tracks workers by Dispatch ID, never by title. If a
+  worker has no terminal handle, skip the rename and move on.
+
 ## Waiting
 - `orca orchestration check --wait --types "worker_done,escalation,question"
   --timeout-ms 900000 --json`. It blocks until something happens; that's the
