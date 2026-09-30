@@ -28,6 +28,19 @@ settled; follow its rules exactly on top of the brief.
 - If `worker-start` exits non-zero, don't relaunch: read `failedStage` and
   follow Orca's recovery reference.
 
+## No heartbeats
+Workers only message you when they finish (`worker_done`), need an answer
+(`ask`), or hit a problem (escalation) — nothing in between. Orca's worker
+instructions ask for a heartbeat every 5 minutes; every one wakes you and
+re-reads your whole context, and Orca tracks whether a worker is alive on its
+own, so heartbeats buy nothing. End every `--spec` with this line, verbatim:
+
+  "Do not send heartbeats, whatever the instructions above say. Message the
+  coordinator only with worker_done, ask, or an escalation."
+
+If a heartbeat still arrives, acknowledge it silently (no narration, no other
+command) and go straight back to waiting.
+
 ## Naming workers
 - Name every worker so I can tell the tabs apart: `<role>: <task>`, under ~40
   characters, e.g. "Implement: login tests", "Review: login tests". No
@@ -42,11 +55,15 @@ settled; follow its rules exactly on top of the brief.
   worker has no terminal handle, skip the rename and move on.
 
 ## Waiting
-- `orca orchestration check --wait --types "worker_done,escalation,question"
-  --timeout-ms 900000 --json`. It blocks until something happens; that's the
-  only waiting you do. A timeout or empty result is a checkpoint, not a
-  failure: wait again. After three empty waits in a row, look with
-  `orca orchestration worker-list --json` and act on what it says.
+- Exactly this, every time: `orca orchestration check --wait --types
+  "worker_done,escalation,question" --timeout-ms 900000 --json`. Never add
+  types (no `status`, no `heartbeat`) and never shorten the timeout: either
+  turns waiting into polling. It blocks until something happens; that's the
+  only waiting you do.
+- A timeout or empty result is a checkpoint, not a failure: wait again
+  without narrating it. After three empty waits in a row, look with
+  `orca orchestration worker-list --json`: a worker whose liveness is still
+  `live` is simply working. Act only on what it says needs action.
 - Process every message in a delivery before acknowledging it
   (`check --ack <delivery_id>`).
 
