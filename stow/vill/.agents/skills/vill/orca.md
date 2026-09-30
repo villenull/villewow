@@ -55,6 +55,10 @@ settled; follow its rules exactly on top of the brief.
   in `orca worktree list --json`).
 - `orca terminal rename --terminal $ORCA_TERMINAL_HANDLE --title "<Project> -
   Orchestrator" --json`.
+- The rename's own reply is the check: it worked if it says `"ok": true` and
+  `result.rename.title` is your new name. Don't check `orca terminal show`:
+  its `title` is what the agent program calls itself (e.g. "✳ Claude Code"),
+  not the tab name, so it never matches. Report the rename as done.
 
 ## Handing off
 - To start a fresh orchestrator, use `orca-cli`'s handoff: a new terminal in
