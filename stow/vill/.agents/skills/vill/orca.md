@@ -29,9 +29,9 @@ settled; follow its rules exactly on top of the brief.
   follow Orca's recovery reference.
 
 ## Naming workers
-- Name every worker so I can tell the tabs apart:
-  `<Project> - <role>: <task>`, under ~40 characters, e.g.
-  "UniReto - Implement: login tests", "UniReto - Review: login tests".
+- Name every worker so I can tell the tabs apart: `<role>: <task>`, under ~40
+  characters, e.g. "Implement: login tests", "Review: login tests". No
+  project prefix: the tabs already sit in the project.
   Roles: Implement, Review, Instruction review, Research.
 - Pass the task part as `--task-title` on `worker-start`.
 - Then rename the worker's tab: take its terminal handle from the

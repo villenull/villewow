@@ -1,6 +1,6 @@
 ---
 name: villnext
-description: Villenull's "what should we work on next" prompt for an orchestrator already running /vill, in Paseo or Orca. Load ONLY when the user explicitly types /villnext. Never load it on your own initiative, and never as a subagent or worker launched by another agent.
+description: Villenull's "what should we work on next" prompt for an orchestrator already running /vill in Orca. Load ONLY when the user explicitly types /villnext. Never load it on your own initiative, and never as a subagent or worker launched by another agent.
 disable-model-invocation: true
 ---
 
@@ -15,8 +15,8 @@ As my orchestrator, propose what we should work on now.
 
 1. Work from what you already learned in /vill Step 2. Read more only where a
    proposal needs it, token-conservatively.
-2. Favor work that can run in parallel on the free models your tool can
-   launch (the /vill tool guide says which): tasks with disjoint files, clear
+2. Favor work that can run in parallel on the free models Orca can launch
+   (/vill's orca.md says which): tasks with disjoint files, clear
    scope, and a way to verify them. Serial work is fine where it's genuinely
    needed; say why.
 3. Give me one short plan in plain English:
@@ -28,4 +28,4 @@ As my orchestrator, propose what we should work on now.
    (recommended option first), plus any questions you genuinely have about
    scope, intent, or priority.
 5. Don't launch any worker until I approve. After that, run the plan under
-   the /vill brief and its tool guide.
+   the /vill brief and its orca.md.

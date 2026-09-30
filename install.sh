@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis opencode_settings codex_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis opencode_settings codex_settings orca orca_skills orca_settings shell_plugins auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -24,8 +24,8 @@ CLIS=(claude gh opencode)
 
 TEXT_MIME_TYPES=(text/plain text/markdown text/x-markdown text/x-shellscript application/x-shellscript)
 
-PASEO_APPIMAGE="$HOME/.local/opt/Paseo-x86_64.AppImage"
-PASEO_SKILLS=(paseo paseo-advisor paseo-committee paseo-handoff paseo-help paseo-plugin)
+ORCA_PACKAGE=stably-orca-bin
+ORCA_SKILLS=(orca-cli orchestration)
 
 # id|git url
 SHELL_PLUGINS=(
@@ -147,7 +147,7 @@ step_clis() {
 }
 
 # OpenCode approves every permission request (same as always passing --auto).
-# This also covers the OpenCode agents Paseo launches.
+# This also covers the OpenCode workers Orca launches.
 step_opencode_settings() {
   say "OpenCode: skip permission prompts"
   merge_json ~/.config/opencode/opencode.json "$DOTFILES/opencode/opencode.json"
@@ -181,53 +181,7 @@ print("    turned on")
 PY
 }
 
-step_paseo() {
-  say "Paseo (latest AppImage)"
-  omarchy pkg add fuse2
-
-  local release tag url
-  release=$(curl -fsSL https://api.github.com/repos/getpaseo/paseo/releases/latest)
-  tag=$(jq -r .tag_name <<<"$release")
-  url=$(jq -r '.assets[] | select(.name | endswith("x86_64.AppImage")) | .browser_download_url' <<<"$release")
-
-  if [[ -x $PASEO_APPIMAGE && $(cat "$PASEO_APPIMAGE.version" 2>/dev/null) == "$tag" ]]; then
-    note "Paseo $tag already installed"
-  else
-    mkdir -p "$(dirname "$PASEO_APPIMAGE")"
-    curl -fL --progress-bar -o "$PASEO_APPIMAGE.part" "$url"
-    chmod +x "$PASEO_APPIMAGE.part"
-    mv "$PASEO_APPIMAGE.part" "$PASEO_APPIMAGE"
-    echo "$tag" >"$PASEO_APPIMAGE.version"
-    note "installed Paseo $tag"
-  fi
-
-  mkdir -p ~/.local/bin
-  ln -sfn "$PASEO_APPIMAGE" ~/.local/bin/paseo
-
-  local icon=~/.local/share/icons/hicolor/128x128/apps/Paseo.png tmp
-  if [[ ! -f $icon ]]; then
-    tmp=$(mktemp -d)
-    (cd "$tmp" && "$PASEO_APPIMAGE" --appimage-extract Paseo.png >/dev/null)
-    install -Dm644 "$tmp/squashfs-root/Paseo.png" "$icon"
-    rm -rf "$tmp"
-  fi
-
-  mkdir -p ~/.local/share/applications
-  cat >~/.local/share/applications/Paseo.desktop <<EOF
-[Desktop Entry]
-Name=Paseo
-Exec=$PASEO_APPIMAGE --class=Paseo %U
-Terminal=false
-Type=Application
-Icon=Paseo
-StartupWMClass=Paseo
-Comment=Paseo desktop app
-MimeType=x-scheme-handler/paseo;
-Categories=Development;
-EOF
-}
-
-# Merge our settings into Paseo's files, keeping everything else in them.
+# Merge our settings into a JSON settings file, keeping everything else in it.
 # A missing file starts as $3 (default: {}).
 merge_json() {
   local target=$1 ours=$2 initial=${3:-'{}'}
@@ -237,25 +191,46 @@ merge_json() {
   mv "$target.tmp" "$target"
 }
 
-step_paseo_settings() {
-  say "Paseo settings"
-  merge_json ~/.paseo/config.json "$DOTFILES/paseo/config.json" '{"version": 1}'
-  merge_json ~/.config/Paseo/desktop-settings.json "$DOTFILES/paseo/desktop-settings.json" '{"version": 1}'
-  chmod 600 ~/.paseo/config.json
-  if paseo daemon status >/dev/null 2>&1; then
-    paseo reload >/dev/null
-  else
-    paseo start >/dev/null
-  fi
-  note "applied"
+# Orca, from the AUR, with its `orca-ide` command on PATH. On Linux the CLI is
+# orca-ide outside Orca's own terminals: bare `orca` is the GNOME screen reader.
+step_orca() {
+  say "Orca"
+  omarchy pkg aur add "$ORCA_PACKAGE"
+  mkdir -p ~/.local/bin
+  ln -sfn /opt/stably-orca/resources/bin/orca-ide ~/.local/bin/orca-ide
+  note "installed; open it once before the orca_settings step"
 }
 
-step_paseo_skills() {
-  say "Paseo orchestration skills"
+# Orca's orchestration and CLI skills, which /vill tells orchestrators to load.
+step_orca_skills() {
+  say "Orca skills"
   local args=() skill
-  for skill in "${PASEO_SKILLS[@]}"; do args+=(-s "$skill"); done
-  mise x node@lts -- npx --yes skills add getpaseo/paseo -g -y \
-    -a claude-code -a codex -a opencode "${args[@]}"
+  for skill in "${ORCA_SKILLS[@]}"; do args+=(--skill "$skill"); done
+  orca-ide skills install "${args[@]}" --agent claude-code,codex,opencode --json >/dev/null
+  note "installed ${ORCA_SKILLS[*]}"
+}
+
+# My Orca settings, merged into its settings file (secrets are never stored
+# here). Orca rewrites that file while it runs, so it has to be closed, and it
+# must have been opened once so the file exists.
+step_orca_settings() {
+  say "Orca settings"
+  local data=~/.config/orca/profiles/local-default/orca-data.json
+  if [[ ! -f $data ]]; then
+    note "skipped: open Orca once, quit it, then run: ./install.sh orca_settings"
+    return
+  fi
+  if pgrep -f /opt/stably-orca/ >/dev/null; then
+    note "skipped: quit Orca first, then run: ./install.sh orca_settings"
+    return
+  fi
+  cp "$data" "$data.bak.$(date +%s)"
+  jq --slurpfile ours "$DOTFILES/orca/settings.json" --arg home "$HOME" '
+    .settings = ((.settings // {}) * ($ours[0]
+      | .workspaceDir |= (if type == "string" then sub("^~"; $home) else . end)))
+  ' "$data" >"$data.tmp"
+  mv "$data.tmp" "$data"
+  note "applied (previous file kept as orca-data.json.bak.*)"
 }
 
 step_shell_plugins() {
