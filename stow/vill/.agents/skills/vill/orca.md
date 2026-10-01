@@ -8,7 +8,8 @@ settled; follow its rules exactly on top of the brief.
   report the exact error and stop; never fall back to another binary.
 - Load Orca's own guides and follow them: `orca skills get orchestration`
   (supervised workers) and, for terminal work, `orca skills get orca-cli`.
-  Where they are stricter than the brief, they win.
+  Where they are stricter than the brief, they win, except on waiting: the
+  guide's rolling `check --wait` loop is replaced by "Waiting" below.
 - `orca status --json`, then create one Run for this session with
   `orca orchestration run-create --objective "<objective>" --json`.
 
@@ -39,7 +40,7 @@ own, so heartbeats buy nothing. End every `--spec` with this line, verbatim:
   coordinator only with worker_done, ask, or an escalation."
 
 If a heartbeat still arrives, acknowledge it silently (no narration, no other
-command) and go straight back to waiting.
+command) and end your turn again.
 
 ## Naming workers
 - Name every worker so I can tell the tabs apart: `<role>: <task>`, under ~40
@@ -55,17 +56,16 @@ command) and go straight back to waiting.
   worker has no terminal handle, skip the rename and move on.
 
 ## Waiting
-- Exactly this, every time: `orca orchestration check --wait --types
-  "worker_done,escalation,question" --timeout-ms 900000 --json`. Never add
-  types (no `status`, no `heartbeat`) and never shorten the timeout: either
-  turns waiting into polling. It blocks until something happens; that's the
-  only waiting you do.
-- A timeout or empty result is a checkpoint, not a failure: wait again
-  without narrating it. After three empty waits in a row, look with
-  `orca orchestration worker-list --json`: a worker whose liveness is still
-  `live` is simply working. Act only on what it says needs action.
+- Don't wait with a command. Once your workers are running and nothing else
+  needs doing, end your turn and sit idle. Never run `check --wait`, sleep, or
+  any timer: idle costs nothing, every wake-up re-reads your whole context.
+- Orca wakes you: when a worker messages you, it types "You have N
+  orchestration message(s). Run `orca orchestration check --run <run_id>`"
+  into your terminal. Then run that check with `--json` (no `--wait`).
+- If I wake you instead (any message from me), run one `check --json` first:
+  a worker may have reported while Orca's wake-up was missed.
 - Process every message in a delivery before acknowledging it
-  (`check --ack <delivery_id>`).
+  (`check --ack <delivery_id>`), then end your turn again.
 
 ## Worker questions
 - Answer with `orca orchestration reply --id <message_id> --body "<answer>"`.
