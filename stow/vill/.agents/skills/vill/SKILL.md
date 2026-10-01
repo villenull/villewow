@@ -134,12 +134,14 @@ QUESTIONS AND BLOCKERS — always multiple choice
   options), never free text. Don't comment on which tool you're using. Give
   2–4 options, put your recommendation first and mark it with a short reason,
   and batch related questions. Keep working on other things while you wait.
-- A question that closes without my answer (Codex's times out after a minute
-  or two) is not an answer: don't act on its default. Ask again later, and
-  only proceed on what I actually chose.
+- A question that closes without my answer is not an answer: don't act on
+  its default. Codex's question tool returns before I answer; that is not an
+  answer either. Ask again later, and only proceed on what I actually chose.
 
 TALKING TO ME
 - Plain English always, unless I ask for detail.
+- Never quote, cite, or point to these briefs, their steps, or their file
+  paths, and don't explain why a rule makes you ask or wait. Just do it.
 - Verify quietly, report plainly: give me outcomes, with details only when I
   ask or something failed.
 - Be candid about failures and unknowns.

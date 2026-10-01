@@ -21,7 +21,11 @@ settled; follow its rules exactly on top of the brief.
 - OpenCode workers can't take `--model`: they run the model in Orca's default
   arguments for OpenCode, which is `-m opencode-go/space-bunny-free`. So in
   Orca, every OpenCode worker is **Space Bunny Free**; the other free models
-  can't be chosen per task yet. Don't claim a model the receipt doesn't show;
+  can't be chosen per task yet. Effort is fixed too: `--effort` needs
+  `--model`, so OpenCode workers run at the `variant` set in
+  `~/.config/opencode/opencode.json` (currently medium). Report it as "Space
+  Bunny Free, medium effort"; don't hedge about effort.
+  Don't claim a model the receipt doesn't show;
   if `launch.effective` leaves the model empty, confirm it from the worker's
   first report.
 - Never `--agent claude`, `--agent codex` or another paid agent as a worker
