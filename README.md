@@ -23,7 +23,7 @@ The script is safe to re-run, and each step can run on its own:
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
 | `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers) |
-| `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort, so Orca's OpenCode workers stay at medium even when an orchestrator is switched to max |
+| `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort, so Orca's OpenCode workers stay at medium even when an orchestrator is switched to max. Tool details are hidden: finished commands and their output don't show (toggle with ctrl+p → Toggle tool details) |
 | `codex_settings` | Codex's arrow-key multiple-choice questions outside Plan mode (`default_mode_request_user_input`) |
 | `orca` | [Orca](https://github.com/stablyai/orca) from the AUR (`stably-orca-bin`), with its `orca-ide` command on PATH |
 | `orca_skills` | Orca's `orca-cli` and `orchestration` skills for Claude Code, Codex and OpenCode |

@@ -151,9 +151,12 @@ step_clis() {
 # beats the one saved when you pick max in an orchestrator, so workers stay at
 # medium while that orchestrator session runs at max.
 # This also covers the OpenCode workers Orca launches.
+# Tool details are hidden too (finished commands and their output don't show),
+# which is a saved UI toggle in OpenCode's state file, not its config.
 step_opencode_settings() {
-  say "OpenCode: skip permission prompts, workers at medium effort"
+  say "OpenCode: skip permission prompts, workers at medium effort, tool details hidden"
   merge_json ~/.config/opencode/opencode.json "$DOTFILES/opencode/opencode.json"
+  merge_json ~/.local/state/opencode/kv.json "$DOTFILES/opencode/kv.json"
   note "applied"
 }
 
