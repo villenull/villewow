@@ -146,10 +146,13 @@ step_clis() {
   done
 }
 
-# OpenCode approves every permission request (same as always passing --auto).
+# OpenCode approves every permission request (same as always passing --auto),
+# and its Build agent runs Space Bunny at medium effort: an agent's variant
+# beats the one saved when you pick max in an orchestrator, so workers stay at
+# medium while that orchestrator session runs at max.
 # This also covers the OpenCode workers Orca launches.
 step_opencode_settings() {
-  say "OpenCode: skip permission prompts"
+  say "OpenCode: skip permission prompts, workers at medium effort"
   merge_json ~/.config/opencode/opencode.json "$DOTFILES/opencode/opencode.json"
   note "applied"
 }

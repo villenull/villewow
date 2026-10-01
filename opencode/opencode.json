@@ -1,4 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "permission": "allow"
+  "permission": "allow",
+  "agent": {
+    "build": {
+      "model": "opencode-go/space-bunny-free",
+      "variant": "medium"
+    }
+  }
 }
