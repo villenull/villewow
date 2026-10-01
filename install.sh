@@ -216,27 +216,103 @@ step_orca_skills() {
   note "installed ${ORCA_SKILLS[*]}"
 }
 
-# My Orca settings, merged into its settings file (secrets are never stored
-# here). Orca rewrites that file while it runs, so it has to be closed, and it
-# must have been opened once so the file exists.
+# Orca re-executes itself on start, so the pid we launch is gone at once and
+# Orca is closed by name instead. That only happens in orca_first_run, which
+# runs only when no Orca was open, so the one it closes is the one it opened.
+ORCA_BIN=/opt/stably-orca/orca-ide
+
+# By process name, not command line: a command line that merely mentions
+# Orca's path (a shell running this script, say) must not count.
+orca_running() { pgrep -x orca-ide >/dev/null; }
+
+# Orca keeps its state in profile-state.db, one JSON document per domain with
+# a SHA-256 of its payload and a revision counter. orca-data.json is only an
+# export: editing it makes the two copies disagree, and Orca then asks which
+# to keep. So settings are written into the database, the way Orca writes them.
+orca_settings_ready() {
+  python3 - "$1" <<'PY'
+import sqlite3, sys
+try:
+  db = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True)
+  ok = db.execute("select 1 from profile_state_documents where domain = 'settings'").fetchone()
+except sqlite3.Error:
+  ok = None
+sys.exit(0 if ok else 1)
+PY
+}
+
+# Open Orca once so it creates its profile, then close it again. Gives up
+# after two minutes (closing Orca anyway) if the settings never appear.
+orca_first_run() {
+  local db=$1 pid i
+  setsid "$ORCA_BIN" >/dev/null 2>&1 </dev/null &
+  pid=$!
+  for ((i = 0; i < 120; i++)); do
+    orca_settings_ready "$db" && break
+    sleep 1
+  done
+  # A moment for Orca to finish starting before it is asked to quit.
+  sleep 5
+  pkill -TERM -x orca-ide || true
+  for ((i = 0; i < 30; i++)); do
+    orca_running || break
+    sleep 1
+  done
+  orca_settings_ready "$db"
+}
+
+# My Orca settings, merged into Orca's own settings (secrets are never stored
+# here). Orca must be closed: it holds the database while it runs. On a fresh
+# install there is no profile yet, so Orca is opened once and closed again.
 step_orca_settings() {
   say "Orca settings"
-  local data=~/.config/orca/profiles/local-default/orca-data.json
-  if [[ ! -f $data ]]; then
-    note "skipped: open Orca once, quit it, then run: ./install.sh orca_settings"
-    return
-  fi
-  if pgrep -f /opt/stably-orca/ >/dev/null; then
+  local profile=${XDG_CONFIG_HOME:-$HOME/.config}/orca/profiles/local-default
+  local db=$profile/profile-state.db
+  if orca_running; then
     note "skipped: quit Orca first, then run: ./install.sh orca_settings"
     return
   fi
-  cp "$data" "$data.bak.$(date +%s)"
-  jq --slurpfile ours "$DOTFILES/orca/settings.json" --arg home "$HOME" '
-    .settings = ((.settings // {}) * ($ours[0]
-      | .workspaceDir |= (if type == "string" then sub("^~"; $home) else . end)))
-  ' "$data" >"$data.tmp"
-  mv "$data.tmp" "$data"
-  note "applied (previous file kept as orca-data.json.bak.*)"
+  if ! orca_settings_ready "$db"; then
+    note "opening Orca once so it creates its settings, then closing it"
+    if ! orca_first_run "$db"; then
+      note "skipped: Orca didn't create its settings. Open it, finish its"
+      note "welcome screen, quit it, then run: ./install.sh orca_settings"
+      return
+    fi
+  fi
+  local stamp f
+  stamp=$(date +%s)
+  for f in "$db" "$db-wal" "$db-shm"; do
+    [[ -f $f ]] && cp "$f" "${f/profile-state.db/profile-state.db.dotfiles-bak.$stamp}"
+  done
+  python3 - "$db" "$DOTFILES/orca/settings.json" "$HOME" <<'PY'
+import hashlib, json, sqlite3, sys, time
+db_path, ours_path, home = sys.argv[1:]
+
+def merge(base, ours):
+  """jq's `*`: objects merge key by key, anything else is replaced."""
+  if isinstance(base, dict) and isinstance(ours, dict):
+    return {**base, **{key: merge(base.get(key), value) for key, value in ours.items()}}
+  return ours
+
+ours = json.load(open(ours_path))
+if isinstance(ours.get("workspaceDir"), str) and ours["workspaceDir"].startswith("~"):
+  ours["workspaceDir"] = home + ours["workspaceDir"][1:]
+
+db = sqlite3.connect(db_path)
+with db:
+  payload, = db.execute("select payload from profile_state_documents where domain = 'settings'").fetchone()
+  merged = json.dumps(merge(json.loads(payload), ours), separators=(",", ":"), ensure_ascii=False)
+  if merged == payload:
+    print("    already applied")
+    sys.exit(0)
+  revision = int(db.execute("select value from profile_state_meta where key = 'revision'").fetchone()[0]) + 1
+  db.execute("update profile_state_documents set payload = ?, content_hash = ?, revision = ?, updated_at = ?"
+             " where domain = 'settings'",
+             (merged, hashlib.sha256(merged.encode()).hexdigest(), revision, int(time.time() * 1000)))
+  db.execute("update profile_state_meta set value = ? where key = 'revision'", (str(revision),))
+print("    applied (previous database kept as profile-state.db.dotfiles-bak.*)")
+PY
 }
 
 step_shell_plugins() {
