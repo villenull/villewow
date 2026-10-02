@@ -23,19 +23,16 @@ The script is safe to re-run, and each step can run on its own:
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
 | `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers) |
-| `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort, so Orca's OpenCode workers stay at medium even when an orchestrator is switched to max. Tool details are hidden: finished commands and their output don't show (toggle with ctrl+p → Toggle tool details) |
+| `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort. Tool details are hidden: finished commands and their output don't show (toggle with ctrl+p → Toggle tool details) |
 | `codex_settings` | Codex's arrow-key multiple-choice questions outside Plan mode (`default_mode_request_user_input`), and as a picker for the GPT-6 models, whose questions otherwise show as plain text in the terminal (`tools.experimental_request_user_input.enabled`) |
 | `paseo` | Latest official Paseo AppImage, desktop launcher and `paseo` command |
 | `paseo_settings` | Saved MCP/browser tools, terminal profiles, provider/plugin preferences, relay access and desktop settings |
 | `paseo_skills` | Paseo orchestration skills for Claude Code, Codex and OpenCode |
-| `orca` | [Orca](https://github.com/stablyai/orca) from the AUR (`stably-orca-bin`), with its `orca-ide` command on PATH |
-| `orca_skills` | Orca's `orca-cli` and `orchestration` skills for Claude Code, Codex and OpenCode |
-| `orca_settings` | My Orca settings from `orca/settings.json`, including OpenCode workers on Space Bunny Free, written into Orca's own settings database. Orca must be closed; on a fresh install the step opens it once and closes it again to create its profile |
 | `shell_plugins` | Omarchy shell plugins: OpenCode Go Watcher, System Monitor, Mimarchy |
 | `auth` | Guided logins: Google (Chromium), GitHub, Claude, OpenCode |
 | `drop_foot` | Removes Foot, last, so a terminal is always available |
 
-What's left afterwards: Chromium, Files, the image viewer, Ghostty, Paseo and Orca.
+What's left afterwards: Chromium, Files, the image viewer, Ghostty and Paseo.
 
 ## Configs (`stow/`)
 
@@ -45,18 +42,7 @@ What's left afterwards: Chromium, Files, the image viewer, Ghostty, Paseo and Or
   `vill-paseo-v1`, shared by Claude Code, Codex and OpenCode.
 - `villnext` — the matching Paseo version of `/villnext`.
 
-Earlier versions are tagged: `vill-paseo-v1` (Paseo only) and
-`vill-paseo-orca` (Paseo and Orca).
-
-## Orca settings (`orca/settings.json`)
-
-Every Orca setting from my machine except secrets, accounts and per-machine
-history, merged into Orca's settings by the `orca_settings` step. Orca keeps
-them in `profile-state.db`; `orca-data.json` is only an export, and editing it
-makes Orca ask which copy to keep, so the step writes the database the way Orca
-does (compact JSON, its SHA-256, the next revision).
-OpenCode's default arguments are `-m opencode-go/space-bunny-free`, because
-Orca can't choose an OpenCode worker's model per task.
+The original Paseo setup is tagged `vill-paseo-v1`.
 
 ## Omarchy shell plugins
 

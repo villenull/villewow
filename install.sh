@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis opencode_settings codex_settings paseo paseo_settings paseo_skills orca orca_skills orca_settings shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis opencode_settings codex_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -26,9 +26,6 @@ TEXT_MIME_TYPES=(text/plain text/markdown text/x-markdown text/x-shellscript app
 
 PASEO_APPIMAGE="$HOME/.local/opt/Paseo-x86_64.AppImage"
 PASEO_SKILLS=(paseo paseo-advisor paseo-committee paseo-handoff paseo-help paseo-plugin)
-
-ORCA_PACKAGE=stably-orca-bin
-ORCA_SKILLS=(orca-cli orchestration)
 
 # id|git url
 SHELL_PLUGINS=(
@@ -153,7 +150,6 @@ step_clis() {
 # and its Build agent runs Space Bunny at medium effort: an agent's variant
 # beats the one saved when you pick max in an orchestrator, so workers stay at
 # medium while that orchestrator session runs at max.
-# This also covers the OpenCode workers Orca launches.
 # Tool details are hidden too (finished commands and their output don't show),
 # which is a saved UI toggle in OpenCode's state file, not its config.
 step_opencode_settings() {
@@ -276,124 +272,6 @@ step_paseo_skills() {
   for skill in "${PASEO_SKILLS[@]}"; do args+=(-s "$skill"); done
   mise x node@lts -- npx --yes skills add getpaseo/paseo -g -y \
     -a claude-code -a codex -a opencode "${args[@]}"
-}
-
-# Orca, from the AUR, with its `orca-ide` command on PATH. On Linux the CLI is
-# orca-ide outside Orca's own terminals: bare `orca` is the GNOME screen reader.
-step_orca() {
-  say "Orca"
-  omarchy pkg aur add "$ORCA_PACKAGE"
-  mkdir -p ~/.local/bin
-  ln -sfn /opt/stably-orca/resources/bin/orca-ide ~/.local/bin/orca-ide
-  note "installed; open it once before the orca_settings step"
-}
-
-# Orca's orchestration and CLI skills, which /vill tells orchestrators to load.
-step_orca_skills() {
-  say "Orca skills"
-  local args=() skill
-  for skill in "${ORCA_SKILLS[@]}"; do args+=(--skill "$skill"); done
-  orca-ide skills install "${args[@]}" --agent claude-code,codex,opencode --json >/dev/null
-  note "installed ${ORCA_SKILLS[*]}"
-}
-
-# Orca re-executes itself on start, so the pid we launch is gone at once and
-# Orca is closed by name instead. That only happens in orca_first_run, which
-# runs only when no Orca was open, so the one it closes is the one it opened.
-ORCA_BIN=/opt/stably-orca/orca-ide
-
-# By process name, not command line: a command line that merely mentions
-# Orca's path (a shell running this script, say) must not count.
-orca_running() { pgrep -x orca-ide >/dev/null; }
-
-# Orca keeps its state in profile-state.db, one JSON document per domain with
-# a SHA-256 of its payload and a revision counter. orca-data.json is only an
-# export: editing it makes the two copies disagree, and Orca then asks which
-# to keep. So settings are written into the database, the way Orca writes them.
-orca_settings_ready() {
-  python3 - "$1" <<'PY'
-import sqlite3, sys
-try:
-  db = sqlite3.connect(f"file:{sys.argv[1]}?mode=ro", uri=True)
-  ok = db.execute("select 1 from profile_state_documents where domain = 'settings'").fetchone()
-except sqlite3.Error:
-  ok = None
-sys.exit(0 if ok else 1)
-PY
-}
-
-# Open Orca once so it creates its profile, then close it again. Gives up
-# after two minutes (closing Orca anyway) if the settings never appear.
-orca_first_run() {
-  local db=$1 pid i
-  setsid "$ORCA_BIN" >/dev/null 2>&1 </dev/null &
-  pid=$!
-  for ((i = 0; i < 120; i++)); do
-    orca_settings_ready "$db" && break
-    sleep 1
-  done
-  # A moment for Orca to finish starting before it is asked to quit.
-  sleep 5
-  pkill -TERM -x orca-ide || true
-  for ((i = 0; i < 30; i++)); do
-    orca_running || break
-    sleep 1
-  done
-  orca_settings_ready "$db"
-}
-
-# My Orca settings, merged into Orca's own settings (secrets are never stored
-# here). Orca must be closed: it holds the database while it runs. On a fresh
-# install there is no profile yet, so Orca is opened once and closed again.
-step_orca_settings() {
-  say "Orca settings"
-  local profile=${XDG_CONFIG_HOME:-$HOME/.config}/orca/profiles/local-default
-  local db=$profile/profile-state.db
-  if orca_running; then
-    note "skipped: quit Orca first, then run: ./install.sh orca_settings"
-    return
-  fi
-  if ! orca_settings_ready "$db"; then
-    note "opening Orca once so it creates its settings, then closing it"
-    if ! orca_first_run "$db"; then
-      note "skipped: Orca didn't create its settings. Open it, finish its"
-      note "welcome screen, quit it, then run: ./install.sh orca_settings"
-      return
-    fi
-  fi
-  local stamp f
-  stamp=$(date +%s)
-  for f in "$db" "$db-wal" "$db-shm"; do
-    [[ -f $f ]] && cp "$f" "${f/profile-state.db/profile-state.db.dotfiles-bak.$stamp}"
-  done
-  python3 - "$db" "$DOTFILES/orca/settings.json" "$HOME" <<'PY'
-import hashlib, json, sqlite3, sys, time
-db_path, ours_path, home = sys.argv[1:]
-
-def merge(base, ours):
-  """jq's `*`: objects merge key by key, anything else is replaced."""
-  if isinstance(base, dict) and isinstance(ours, dict):
-    return {**base, **{key: merge(base.get(key), value) for key, value in ours.items()}}
-  return ours
-
-ours = json.load(open(ours_path))
-if isinstance(ours.get("workspaceDir"), str) and ours["workspaceDir"].startswith("~"):
-  ours["workspaceDir"] = home + ours["workspaceDir"][1:]
-
-db = sqlite3.connect(db_path)
-with db:
-  payload, = db.execute("select payload from profile_state_documents where domain = 'settings'").fetchone()
-  merged = json.dumps(merge(json.loads(payload), ours), separators=(",", ":"), ensure_ascii=False)
-  if merged == payload:
-    print("    already applied")
-    sys.exit(0)
-  revision = int(db.execute("select value from profile_state_meta where key = 'revision'").fetchone()[0]) + 1
-  db.execute("update profile_state_documents set payload = ?, content_hash = ?, revision = ?, updated_at = ?"
-             " where domain = 'settings'",
-             (merged, hashlib.sha256(merged.encode()).hexdigest(), revision, int(time.time() * 1000)))
-  db.execute("update profile_state_meta set value = ? where key = 'revision'", (str(revision),))
-print("    applied (previous database kept as profile-state.db.dotfiles-bak.*)")
-PY
 }
 
 step_shell_plugins() {
