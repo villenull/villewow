@@ -270,7 +270,7 @@
   "terminalScopeHistoryByWorktree": true,
   "terminalScrollSensitivity": 1.15,
   "terminalScrollbackRows": 5000,
-  "terminalShortcutPolicy": "orca-first",
+  "terminalShortcutPolicy": "terminal-first",
   "terminalSshViewParking": true,
   "terminalThemeDark": "Ghostty Default Style Dark",
   "terminalThemeLight": "Builtin Tango Light",
