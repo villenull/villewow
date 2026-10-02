@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis opencode_settings codex_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings codex_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -144,6 +144,19 @@ step_clis() {
       note "$cli installed (downloads itself on first run)"
     fi
   done
+}
+
+# Install the agent now, rather than relying on the first-run launcher.
+# `omarchy default agent opencode` also opens a session, so save its setting
+# directly to keep the setup script noninteractive.
+step_default_agent() {
+  say "OpenCode as the default AI agent"
+  if ! mise where opencode >/dev/null 2>&1; then
+    mise use -g opencode
+  fi
+  mkdir -p ~/.config/omarchy/defaults
+  printf '%s\n' opencode >~/.config/omarchy/defaults/agent
+  note "applied"
 }
 
 # OpenCode approves every permission request (same as always passing --auto),

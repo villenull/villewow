@@ -23,6 +23,7 @@ The script is safe to re-run, and each step can run on its own:
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
 | `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers) |
+| `default_agent` | Ensures OpenCode is installed and selects it in Omarchy’s Setup → Defaults → Agent |
 | `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort. Tool details are hidden: finished commands and their output don't show (toggle with ctrl+p → Toggle tool details) |
 | `codex_settings` | Codex's arrow-key multiple-choice questions outside Plan mode (`default_mode_request_user_input`), and as a picker for the GPT-6 models, whose questions otherwise show as plain text in the terminal (`tools.experimental_request_user_input.enabled`) |
 | `paseo` | Latest official Paseo AppImage, desktop launcher and `paseo` command |
