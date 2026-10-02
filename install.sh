@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings codex_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -172,44 +172,6 @@ step_opencode_settings() {
   note "applied"
 }
 
-# Codex's arrow-key question tool outside Plan mode, so orchestrators on Codex
-# ask multiple-choice questions like Claude and OpenCode do. The GPT-6 models
-# ask through a non-blocking variant that the terminal app shows as plain text
-# unless tools.experimental_request_user_input is on. Codex also writes this
-# file, so only these keys are touched.
-step_codex_settings() {
-  say "Codex: multiple-choice questions in every mode"
-  python3 - "$HOME/.codex/config.toml" <<'PY'
-import pathlib, re, sys, tomllib
-path = pathlib.Path(sys.argv[1])
-path.parent.mkdir(parents=True, exist_ok=True)
-text = path.read_text() if path.exists() else ""
-changed = False
-for table, key in [("features", "default_mode_request_user_input"),
-                   ("tools.experimental_request_user_input", "enabled")]:
-    current = tomllib.loads(text)
-    for part in table.split("."):
-        current = current.get(part, {})
-    if current.get(key) is True:
-        continue
-    header = re.search(rf"^\[{re.escape(table)}\][ \t]*$", text, re.M)
-    if header:
-        body_end = re.compile(r"^\[", re.M).search(text, header.end())
-        body_end = body_end.start() if body_end else len(text)
-        line = re.compile(rf"^{key}\s*=.*$", re.M)
-        found = line.search(text, header.end(), body_end)
-        text = (text[:found.start()] + f"{key} = true" + text[found.end():] if found
-                else text[:header.end()] + f"\n{key} = true" + text[header.end():])
-    else:
-        text = text.rstrip("\n") + ("\n\n" if text.strip() else "") + f"[{table}]\n{key} = true\n"
-    changed = True
-tomllib.loads(text)
-if changed:
-    path.write_text(text)
-print("    turned on" if changed else "    already on")
-PY
-}
-
 # Merge our settings into a JSON settings file, keeping everything else in it.
 # A missing file starts as $3 (default: {}).
 merge_json() {
@@ -293,10 +255,18 @@ step_shell_plugins() {
   for entry in "${SHELL_PLUGINS[@]}"; do
     id=${entry%%|*}
     url=${entry#*|}
-    if omarchy plugin list 2>/dev/null | grep -q "^$id "; then
+    if [[ -f "$HOME/.config/omarchy/plugins/$id/manifest.json" ]]; then
       note "$id already installed"
+      if [[ $id == io.github.villenull.opencode-go-watcher ]] &&
+          [[ ! -x "$HOME/.config/omarchy/plugins/$id/bin/my-agents-migrate" ]]; then
+        omarchy plugin update "$id"
+      fi
     else
       omarchy plugin add "$url" --enable --yes
+    fi
+    if [[ $id == io.github.villenull.opencode-go-watcher ]]; then
+      "$HOME/.config/omarchy/plugins/$id/bin/my-agents-migrate"
+      omarchy-shell shell rescanPlugins >/dev/null
     fi
   done
 }

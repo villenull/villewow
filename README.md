@@ -25,11 +25,10 @@ The script is safe to re-run, and each step can run on its own:
 | `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers) |
 | `default_agent` | Ensures OpenCode is installed and selects it in Omarchy’s Setup → Defaults → Agent |
 | `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort. Tool details are hidden: finished commands and their output don't show (toggle with ctrl+p → Toggle tool details) |
-| `codex_settings` | Codex's arrow-key multiple-choice questions outside Plan mode (`default_mode_request_user_input`), and as a picker for the GPT-6 models, whose questions otherwise show as plain text in the terminal (`tools.experimental_request_user_input.enabled`) |
 | `paseo` | Latest official Paseo AppImage, desktop launcher and `paseo` command |
 | `paseo_settings` | Saved MCP/browser tools, terminal profiles, provider/plugin preferences, relay access and desktop settings |
 | `paseo_skills` | Paseo orchestration skills for Claude Code, Codex and OpenCode |
-| `shell_plugins` | Omarchy shell plugins: OpenCode Go Watcher, Activity Monitor, Mimarchy |
+| `shell_plugins` | Omarchy shell plugins: My Agents, Activity Monitor, Mimarchy |
 | `auth` | Guided logins: Google (Chromium), GitHub, Claude, OpenCode |
 | `drop_foot` | Removes Foot, last, so a terminal is always available |
 
@@ -49,7 +48,7 @@ The original Paseo setup is tagged `vill-paseo-v1`.
 
 Installed from GitHub and enabled by the `shell_plugins` step:
 
-- [OpenCode Go Watcher](https://github.com/villenull/OpenCodeGoWatcher) — OpenCode Go usage and rate limits in the agents panel
+- [My Agents](https://github.com/villenull/OpenCodeGoWatcher) — customized AI usage panel with the OpenCode Go collector and icons bundled
 - [Activity Monitor](https://github.com/stappmus/omarchy-activity-monitor) — CPU, memory, GPU, storage and processes in the bar
 - [Mimarchy](https://github.com/villenull/Mimarchy) — ARGB lighting for CPU cooler fans, GPU and the cooler display
 
