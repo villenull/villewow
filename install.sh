@@ -251,7 +251,7 @@ step_paseo_skills() {
 
 step_shell_plugins() {
   say "Omarchy shell plugins"
-  local entry id url
+  local entry id url restart_shell=false
   for entry in "${SHELL_PLUGINS[@]}"; do
     id=${entry%%|*}
     url=${entry#*|}
@@ -260,6 +260,7 @@ step_shell_plugins() {
       if [[ $id == io.github.villenull.opencode-go-watcher ]] &&
           [[ ! -x "$HOME/.config/omarchy/plugins/$id/bin/my-agents-migrate" ]]; then
         omarchy plugin update "$id"
+        restart_shell=true
       fi
     else
       omarchy plugin add "$url" --enable --yes
@@ -269,6 +270,9 @@ step_shell_plugins() {
       omarchy-shell shell rescanPlugins >/dev/null
     fi
   done
+  if [[ $restart_shell == true ]]; then
+    omarchy restart shell
+  fi
 }
 
 # Google first (the browser session is used by every later login), then GitHub.
