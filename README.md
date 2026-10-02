@@ -29,7 +29,7 @@ The script is safe to re-run, and each step can run on its own:
 | `paseo` | Latest official Paseo AppImage, desktop launcher and `paseo` command |
 | `paseo_settings` | Saved MCP/browser tools, terminal profiles, provider/plugin preferences, relay access and desktop settings |
 | `paseo_skills` | Paseo orchestration skills for Claude Code, Codex and OpenCode |
-| `shell_plugins` | Omarchy shell plugins: OpenCode Go Watcher, System Monitor, Mimarchy |
+| `shell_plugins` | Omarchy shell plugins: OpenCode Go Watcher, Activity Monitor, Mimarchy |
 | `auth` | Guided logins: Google (Chromium), GitHub, Claude, OpenCode |
 | `drop_foot` | Removes Foot, last, so a terminal is always available |
 
@@ -50,7 +50,7 @@ The original Paseo setup is tagged `vill-paseo-v1`.
 Installed from GitHub and enabled by the `shell_plugins` step:
 
 - [OpenCode Go Watcher](https://github.com/villenull/OpenCodeGoWatcher) — OpenCode Go usage and rate limits in the agents panel
-- [System Monitor](https://github.com/binoymanoj/sys-monitor-omarchy) — live CPU and RAM in the bar
+- [Activity Monitor](https://github.com/stappmus/omarchy-activity-monitor) — CPU, memory, GPU, storage and processes in the bar
 - [Mimarchy](https://github.com/villenull/Mimarchy) — ARGB lighting for CPU cooler fans, GPU and the cooler display
 
 ## Secrets

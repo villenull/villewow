@@ -30,7 +30,7 @@ PASEO_SKILLS=(paseo paseo-advisor paseo-committee paseo-handoff paseo-help paseo
 # id|git url
 SHELL_PLUGINS=(
   "io.github.villenull.opencode-go-watcher|https://github.com/villenull/OpenCodeGoWatcher"
-  "sys-monitor|https://github.com/binoymanoj/sys-monitor-omarchy.git"
+  "stappmus.activity-monitor|https://github.com/stappmus/omarchy-activity-monitor.git"
   "io.github.villenull.mimarchy|https://github.com/villenull/Mimarchy.git"
 )
 
