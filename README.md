@@ -25,6 +25,9 @@ The script is safe to re-run, and each step can run on its own:
 | `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers) |
 | `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort, so Orca's OpenCode workers stay at medium even when an orchestrator is switched to max. Tool details are hidden: finished commands and their output don't show (toggle with ctrl+p → Toggle tool details) |
 | `codex_settings` | Codex's arrow-key multiple-choice questions outside Plan mode (`default_mode_request_user_input`), and as a picker for the GPT-6 models, whose questions otherwise show as plain text in the terminal (`tools.experimental_request_user_input.enabled`) |
+| `paseo` | Latest official Paseo AppImage, desktop launcher and `paseo` command |
+| `paseo_settings` | Saved MCP/browser tools, terminal profiles, provider/plugin preferences, relay access and desktop settings |
+| `paseo_skills` | Paseo orchestration skills for Claude Code, Codex and OpenCode |
 | `orca` | [Orca](https://github.com/stablyai/orca) from the AUR (`stably-orca-bin`), with its `orca-ide` command on PATH |
 | `orca_skills` | Orca's `orca-cli` and `orchestration` skills for Claude Code, Codex and OpenCode |
 | `orca_settings` | My Orca settings from `orca/settings.json`, including OpenCode workers on Space Bunny Free, written into Orca's own settings database. Orca must be closed; on a fresh install the step opens it once and closes it again to create its profile |
@@ -32,19 +35,15 @@ The script is safe to re-run, and each step can run on its own:
 | `auth` | Guided logins: Google (Chromium), GitHub, Claude, OpenCode |
 | `drop_foot` | Removes Foot, last, so a terminal is always available |
 
-What's left afterwards: Chromium, Files, the image viewer, Ghostty and Orca.
+What's left afterwards: Chromium, Files, the image viewer, Ghostty, Paseo and Orca.
 
 ## Configs (`stow/`)
 
 - `hypr` — mouse speed
 - `omarchy` — hides Learn, Trigger, Style and About from the Omarchy menu
-- `vill` — `/vill`, my orchestrator brief for [Orca](https://github.com/stablyai/orca),
-  as a skill for Claude Code, Codex and OpenCode. The rules are in `SKILL.md`,
-  Orca's mechanics in `orca.md`. Only runs when typed; workers are told to
-  refuse it.
-- `villnext` — `/villnext`, run right after `/vill`: the orchestrator proposes
-  what to work on next, favoring parallel work for free workers, and waits for
-  my go-ahead.
+- `vill` — `/vill`, my original Paseo orchestrator brief, restored from
+  `vill-paseo-v1`, shared by Claude Code, Codex and OpenCode.
+- `villnext` — the matching Paseo version of `/villnext`.
 
 Earlier versions are tagged: `vill-paseo-v1` (Paseo only) and
 `vill-paseo-orca` (Paseo and Orca).

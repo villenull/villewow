@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis opencode_settings codex_settings orca orca_skills orca_settings shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis opencode_settings codex_settings paseo paseo_settings paseo_skills orca orca_skills orca_settings shell_plugins auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -23,6 +23,9 @@ REMOVE_PKGS=(
 CLIS=(claude gh opencode)
 
 TEXT_MIME_TYPES=(text/plain text/markdown text/x-markdown text/x-shellscript application/x-shellscript)
+
+PASEO_APPIMAGE="$HOME/.local/opt/Paseo-x86_64.AppImage"
+PASEO_SKILLS=(paseo paseo-advisor paseo-committee paseo-handoff paseo-help paseo-plugin)
 
 ORCA_PACKAGE=stably-orca-bin
 ORCA_SKILLS=(orca-cli orchestration)
@@ -206,6 +209,73 @@ merge_json() {
   [[ -s $target ]] || echo "$initial" >"$target"
   jq -s '.[0] * .[1]' "$target" "$ours" >"$target.tmp"
   mv "$target.tmp" "$target"
+}
+
+step_paseo() {
+  say "Paseo (latest AppImage)"
+  omarchy pkg add fuse2
+
+  local release tag url
+  release=$(curl -fsSL https://api.github.com/repos/getpaseo/paseo/releases/latest)
+  tag=$(jq -r .tag_name <<<"$release")
+  url=$(jq -r '.assets[] | select(.name | endswith("x86_64.AppImage")) | .browser_download_url' <<<"$release")
+
+  if [[ -x $PASEO_APPIMAGE && $(cat "$PASEO_APPIMAGE.version" 2>/dev/null) == "$tag" ]]; then
+    note "Paseo $tag already installed"
+  else
+    mkdir -p "$(dirname "$PASEO_APPIMAGE")"
+    curl -fL --progress-bar -o "$PASEO_APPIMAGE.part" "$url"
+    chmod +x "$PASEO_APPIMAGE.part"
+    mv "$PASEO_APPIMAGE.part" "$PASEO_APPIMAGE"
+    echo "$tag" >"$PASEO_APPIMAGE.version"
+    note "installed Paseo $tag"
+  fi
+
+  mkdir -p ~/.local/bin
+  ln -sfn "$PASEO_APPIMAGE" ~/.local/bin/paseo
+
+  local icon=~/.local/share/icons/hicolor/128x128/apps/Paseo.png tmp
+  if [[ ! -f $icon ]]; then
+    tmp=$(mktemp -d)
+    (cd "$tmp" && "$PASEO_APPIMAGE" --appimage-extract Paseo.png >/dev/null)
+    install -Dm644 "$tmp/squashfs-root/Paseo.png" "$icon"
+    rm -rf "$tmp"
+  fi
+
+  mkdir -p ~/.local/share/applications
+  cat >~/.local/share/applications/Paseo.desktop <<EOF
+[Desktop Entry]
+Name=Paseo
+Exec=$PASEO_APPIMAGE --class=Paseo %U
+Terminal=false
+Type=Application
+Icon=Paseo
+StartupWMClass=Paseo
+Comment=Paseo desktop app
+MimeType=x-scheme-handler/paseo;
+Categories=Development;
+EOF
+}
+
+step_paseo_settings() {
+  say "Paseo settings"
+  merge_json ~/.paseo/config.json "$DOTFILES/paseo/config.json" '{"version": 1}'
+  merge_json ~/.config/Paseo/desktop-settings.json "$DOTFILES/paseo/desktop-settings.json" '{"version": 1}'
+  chmod 600 ~/.paseo/config.json
+  if paseo daemon status >/dev/null 2>&1; then
+    paseo reload >/dev/null
+  else
+    paseo start >/dev/null
+  fi
+  note "applied"
+}
+
+step_paseo_skills() {
+  say "Paseo orchestration skills"
+  local args=() skill
+  for skill in "${PASEO_SKILLS[@]}"; do args+=(-s "$skill"); done
+  mise x node@lts -- npx --yes skills add getpaseo/paseo -g -y \
+    -a claude-code -a codex -a opencode "${args[@]}"
 }
 
 # Orca, from the AUR, with its `orca-ide` command on PATH. On Linux the CLI is
