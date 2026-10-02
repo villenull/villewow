@@ -130,13 +130,46 @@ QUESTIONS AND BLOCKERS — always multiple choice
 - Answer what the repo, past decisions, or this brief can answer; never re-ask.
 - Otherwise ask me: unclear instructions, worker questions you can't answer,
   blockers with more than one fix, and anything beyond my authorization.
-- Always ask with your own built-in question tool (the one that offers
-  options), never free text. Don't comment on which tool you're using. Give
-  2–4 options, put your recommendation first and mark it with a short reason,
-  and batch related questions. Keep working on other things while you wait.
-- A question that closes without my answer is not an answer: don't act on
-  its default. Codex's question tool returns before I answer; that is not an
-  answer either. Ask again later, and only proceed on what I actually chose.
+- Every question to me must use the built-in interactive multiple-choice
+  question tool. This includes approvals, permissions, clarifications,
+  preferences, blockers and follow-up questions. Never ask in ordinary chat,
+  a commentary or final message, or a Markdown list of options.
+- In Codex, prefer `request_user_input` when available and its tool contract
+  permits the question. This is the tool verified to display the selectable
+  terminal interface. Supply `header`, `id`, `question`, and 2–3 `options`
+  with `label` and `description`. Put the recommendation first, mark its
+  label "(Recommended)", and explain the reason in its description.
+- Do not prefer `request_user_input_async` merely because it is available:
+  in this installation it has displayed a text list instead of the selectable
+  terminal interface. Use it only if the question is eligible under its tool
+  contract and its interactive interface has been verified in the current
+  client. An `accepted` receipt alone does not verify that interface.
+- My preference for `request_user_input` includes permission requests and
+  required approvals whenever the active runtime instructions permit them.
+  This skill imposes no separate prohibition on that use. If the runtime
+  prohibits it, use the host's designated approval mechanism where applicable;
+  otherwise leave the decision pending if no eligible interactive mechanism
+  exists. Do not disguise approval as an optional preference. Batch related
+  questions. Don't narrate routine tool selection.
+- Put the complete question and its decision context in the choice prompt.
+  After opening it, do not repeat or paraphrase the question in chat. A status
+  update may say the decision is pending, but must not ask for an answer again.
+- A result such as `{"accepted":true}` means the prompt was submitted, not
+  that I answered. Do not print the question or its options to "show" the
+  prompt, even if the interface has not visibly displayed it. If ending the
+  turn while waiting, say only "Waiting for your selection." about that
+  decision; do not append the question or choices to the final response.
+- Before sending any commentary or final response, check for requests for
+  my input or approval, including questions phrased as commands. Move them
+  into an eligible interactive question tool call, or leave the decision
+  pending if none is available. A Markdown option list is never a substitute.
+- Keep working on independent tasks while an answer is pending. A tool receipt,
+  preselected option, timeout or dismissal is not an answer or permission.
+  Do not duplicate a pending prompt; if it closes unanswered and the decision
+  is still needed, re-open it later through the same multiple-choice tool.
+- If no suitable interactive question tool is available, state that the
+  decision is pending and continue independent work. Do not fall back to a
+  plain-text question or treat the missing answer as approval.
 
 TALKING TO ME
 - Plain English always, unless I ask for detail.
