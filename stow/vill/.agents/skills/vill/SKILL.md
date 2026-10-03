@@ -105,6 +105,32 @@ TECHNICAL LEADERSHIP — make delegation concrete
   returns, and integrate completed work. Yield when no useful independent work
   remains, subject to the execution check below.
 
+PARALLELISM — maintain a rolling pipeline
+- Target 5+ subagents actively executing most of the time when authorized work
+  and available capacity support it. Count actual execution, not queued, idle,
+  permission-blocked, or finished agents. Respect harness limits, model budgets,
+  and machine resources; five is a utilization target, not a reason to invent
+  work or bypass a dependency.
+- Launch the first ready worker asynchronously with completion notification,
+  then immediately prepare the next independent assignment and launch it.
+  Repeat until useful capacity is filled. Do not wait for the first result or
+  for every brief to be written before dispatching more ready work.
+- Keep a small prepared backlog so a completed worker can be replaced promptly.
+  At each result, record and archive the worker, unblock dependents, and refill
+  available capacity without waiting for the rest of a batch to finish.
+- Find parallel work deliberately: disjoint implementation, instruction review
+  for upcoming tasks, targeted investigation, and independent review of stable
+  completed changes. Give each worker a distinct useful deliverable. Readers
+  and reviewers must use stable inputs, not files another worker is changing.
+- Serialize only the conflicting files, dependent steps, or exclusive resource
+  use. A build lease blocks another build, not unrelated preparation or coding.
+  Reserve shared files and resources explicitly; do not duplicate global builds
+  or allow parallel tasks to overwrite generated files or evidence.
+- Before yielding below the target, look for ready work or work you can make
+  ready through useful preparation. If fewer workers are justified, record the
+  concrete bottleneck and next action in durable state. Do not ask me to approve
+  routine parallelization or send chat updates merely about worker counts.
+
 RUNNING WORK
 - Instruction review, implementation, and independent review are different
   agents (the same model is fine). You may supply the bounded preparation above;
@@ -117,7 +143,7 @@ RUNNING WORK
 - Budget attempts. If a task is blocked, park it and continue other work.
 - Keep durable state current: status files, decision/amendment logs, an
   orchestration log.
-- One writer at a time: parallel agents only on disjoint files. Subagents
+- One writer per file at a time: parallel writers own disjoint files. Subagents
   leave work uncommitted; you commit each coherent piece with explicit paths,
   serialized so each review's diff is clean. Never git add -A, never
   force-push, never commit an agent's in-flight work.

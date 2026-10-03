@@ -17,16 +17,21 @@ objective under /vill.
    only where needed. Reconcile existing workers and resource reservations
    before treating any task as running or launching duplicate work.
 2. Build an ordered queue with dependencies, verification, and enough ready work
-   to sustain a long autonomous run when the objective supports it. Favor
-   disjoint tasks on allowed free models. Use serial work where dependencies or
-   exclusive resources require it. Do not manufacture work to fill twelve hours.
+   to sustain a long autonomous run when the objective supports it. Aim for 5+
+   actively executing subagents most of the time, within available capacity.
+   Identify disjoint tasks on allowed free models and a small ready backlog;
+   serialize only real dependencies or resource conflicts. Do not manufacture
+   work to fill twelve hours or meet the worker target.
 3. Give me one short plan in plain English:
    - Each task: what it is, why now, files, starting technical approach, model
      and supported effort level, and how you will verify it.
    - Which tasks run in parallel, which wait, and their execution order.
    - Completion criteria, applicable budgets, and genuine owner-only blockers.
 4. If the objective and boundaries are already authorized, announce the plan and
-   start without a new approval interview. If authority is missing, prepare one
+   start without a new approval interview. Launch the first ready worker, prepare
+   and launch the next while it runs, and keep filling useful capacity under
+   /vill's rolling pipeline. Do not wait for a whole batch to finish before
+   replenishing it. If authority is missing, prepare one
    batched multiple-choice decision with the recommendation first, asking only
    about the missing scope, intent, priority, or protected boundary. Continue
    work already authorized while awaiting that decision.
