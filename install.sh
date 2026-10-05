@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis omp default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -146,16 +146,30 @@ step_clis() {
   done
 }
 
-# Install the agent now, rather than relying on the first-run launcher.
-# `omarchy default agent opencode` also opens a session, so save its setting
-# directly to keep the setup script noninteractive.
-step_default_agent() {
-  say "OpenCode as the default AI agent"
-  if ! mise where opencode >/dev/null 2>&1; then
-    mise use -g opencode
+# Oh My Pi is the default agent. A binary in ~/.local/bin that isn't one of
+# mise's own wrappers counts as your install (Omarchy treats it the same way);
+# otherwise mise installs it from the same source Omarchy uses.
+step_omp() {
+  say "Oh My Pi"
+  if [[ -x $HOME/.local/bin/omp ]] && ! grep -q '^mise use -g' "$HOME/.local/bin/omp"; then
+    note "omp already installed (~/.local/bin/omp)"
+  elif mise where github:can1357/oh-my-pi >/dev/null 2>&1; then
+    note "omp already installed (mise)"
+  else
+    mise use -g github:can1357/oh-my-pi
+    note "omp installed (downloads itself on first run)"
   fi
+}
+
+# Install the agent now, rather than relying on the first-run launcher.
+# `omarchy default agent omp` also opens a session, so save its setting
+# directly to keep the setup script noninteractive. Omarchy launches it with
+# --auto-approve, so unattended launches never stop for a tool approval.
+step_default_agent() {
+  say "Oh My Pi as the default AI agent"
+  has omp || { echo "Oh My Pi is missing: run ./install.sh omp first." >&2; exit 1; }
   mkdir -p ~/.config/omarchy/defaults
-  printf '%s\n' opencode >~/.config/omarchy/defaults/agent
+  printf '%s\n' omp >~/.config/omarchy/defaults/agent
   note "applied"
 }
 
@@ -279,30 +293,38 @@ step_shell_plugins() {
 step_auth() {
   say "Logins"
 
-  note "1/4 Google: sign in to Chromium (profile icon, top right)."
+  note "1/5 Google: sign in to Chromium (profile icon, top right)."
   chromium --new-window https://accounts.google.com/ >/dev/null 2>&1 &
   wait_for_user "Signed in to Google?" || note "skipped Google"
 
   if gh auth status >/dev/null 2>&1; then
-    note "2/4 GitHub: already logged in"
+    note "2/5 GitHub: already logged in"
   else
-    note "2/4 GitHub"
+    note "2/5 GitHub"
     gh auth login --hostname github.com --git-protocol https --web
     gh auth setup-git
   fi
 
   if claude auth status --json 2>/dev/null | jq -e .loggedIn >/dev/null; then
-    note "3/4 Claude: already logged in"
+    note "3/5 Claude: already logged in"
   else
-    note "3/4 Claude"
+    note "3/5 Claude"
     claude auth login
   fi
 
   if opencode auth list 2>/dev/null | grep -q 'OpenCode'; then
-    note "4/4 OpenCode: already logged in"
+    note "4/5 OpenCode: already logged in"
   else
-    note "4/4 OpenCode: choose OpenCode Go and paste your key from opencode.ai"
+    note "4/5 OpenCode: choose OpenCode Go and paste your key from opencode.ai"
     opencode auth login
+  fi
+
+  # Last login: the default agent, so a fresh install ends ready to use.
+  if omp usage --json 2>/dev/null | jq -e '.reports | length > 0' >/dev/null; then
+    note "5/5 Oh My Pi: already logged in"
+  else
+    note "5/5 Oh My Pi: sign in to the providers you want (Anthropic, OpenAI Codex, OpenCode Go)"
+    omp login
   fi
 }
 

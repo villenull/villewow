@@ -23,13 +23,13 @@ The script is safe to re-run, and each step can run on its own:
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
 | `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers) |
-| `default_agent` | Ensures OpenCode is installed and selects it in Omarchy’s Setup → Defaults → Agent |
+| `omp` | Oh My Pi, unless you already installed it yourself |
+| `default_agent` | Checks Oh My Pi is installed and selects it in Omarchy’s Setup → Defaults → Agent |
 | `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort. Tool details are hidden: finished commands and their output don't show (toggle with ctrl+p → Toggle tool details) |
 | `paseo` | Latest official Paseo AppImage, desktop launcher and `paseo` command |
-| `paseo_settings` | Saved MCP/browser tools, terminal profiles, provider/plugin preferences, relay access and desktop settings |
 | `paseo_skills` | Paseo orchestration skills for Claude Code, Codex and OpenCode |
 | `shell_plugins` | Omarchy shell plugins: My Agents, Activity Monitor, Mimarchy |
-| `auth` | Guided logins: Google (Chromium), GitHub, Claude, OpenCode |
+| `auth` | Guided logins, Oh My Pi last: Google (Chromium), GitHub, Claude, OpenCode, Oh My Pi |
 | `drop_foot` | Removes Foot, last, so a terminal is always available |
 
 What's left afterwards: Chromium, Files, the image viewer, Ghostty and Paseo.
