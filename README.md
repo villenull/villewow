@@ -42,10 +42,11 @@ What's left afterwards: Chromium, Files, the image viewer, Ghostty and Paseo.
   Agents panel shows live limits instead of "SIGN-IN EXPIRED". It also clears a
   stale `~/.claude/.oauth_refresh.lock`, which is what makes refreshes fail after
   one is interrupted.
-- `vill` — `/vill`, my orchestrator brief, Oh My Pi first with a short section
-  for the few things only Paseo owns. The original, fully Paseo-based version is
-  tagged `vill-paseo-v1`.
-- `villnext` — the matching `/villnext`.
+- `vill` — `/vill`, my original Paseo orchestrator brief, restored from
+  `vill-paseo-v1`, shared by Claude Code, Codex and OpenCode.
+- `villnext` — the matching Paseo version of `/villnext`.
+
+The original Paseo setup is tagged `vill-paseo-v1`.
 
 ## Omarchy shell plugins
 
