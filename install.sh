@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis omp default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -162,19 +162,13 @@ ensure_omp() {
   fi
 }
 
-# Runs on its own too, so it stays a step as well as part of `clis`.
-step_omp() {
-  say "Oh My Pi"
-  ensure_omp
-}
-
 # Install the agent now, rather than relying on the first-run launcher.
 # `omarchy default agent omp` also opens a session, so save its setting
 # directly to keep the setup script noninteractive. Omarchy launches it with
 # --auto-approve, so unattended launches never stop for a tool approval.
 step_default_agent() {
   say "Oh My Pi as the default AI agent"
-  has omp || { echo "Oh My Pi is missing: run ./install.sh omp first." >&2; exit 1; }
+  has omp || { echo "Oh My Pi is missing: run ./install.sh clis first." >&2; exit 1; }
   mkdir -p ~/.config/omarchy/defaults
   printf '%s\n' omp >~/.config/omarchy/defaults/agent
   note "applied"
