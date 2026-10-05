@@ -6,6 +6,7 @@
     "browserTools": {
       "enabled": true
     },
+    "enableTerminalAgentHooks": true,
     "terminalProfiles": [
       {
         "id": "claude",
@@ -33,6 +34,15 @@
           "--prompt={{{prompt}}}"
         ],
         "icon": "opencode"
+      },
+      {
+        "id": "omp",
+        "name": "OMP",
+        "command": "omp",
+        "args": [
+          "--auto-approve",
+          "{{{prompt}}}"
+        ]
       }
     ],
     "cors": {
@@ -48,6 +58,7 @@
     "baseUrl": "https://app.paseo.sh"
   },
   "pluginsEnabled": true,
+  "version": 1,
   "agents": {
     "providers": {
       "copilot": {
@@ -55,6 +66,9 @@
       },
       "pi": {
         "enabled": false
+      },
+      "omp": {
+        "enabled": true
       }
     }
   }
