@@ -28,6 +28,7 @@ The script is safe to re-run, and each step can run on its own:
 | `paseo` | Latest official Paseo AppImage, desktop launcher and `paseo` command |
 | `paseo_skills` | Paseo orchestration skills for Claude Code, Codex and OpenCode |
 | `shell_plugins` | Omarchy shell plugins: My Agents, Activity Monitor, Mimarchy |
+| `dictation` | Voxtype dictation (`wtype voxtype-bin`, model, systemd user service, and the GPU variant where the hardware supports it): F9 to dictate, Super+Ctrl+X to toggle |
 | `auth` | Guided logins, Oh My Pi last: Google (Chromium), GitHub, Claude, OpenCode, Oh My Pi |
 | `drop_foot` | Removes Foot, last, so a terminal is always available |
 

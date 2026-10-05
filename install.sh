@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins dictation auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
 STOW_PACKAGES=(hypr omarchy)
@@ -288,6 +288,41 @@ step_shell_plugins() {
   if [[ $restart_shell == true ]]; then
     omarchy restart shell
   fi
+}
+
+# Dictation: hold F9, or toggle it with Super+Ctrl+X. Same packages Omarchy's
+# own installer uses; the model download and the systemd user service are the
+# parts that actually take effect, so they run even when Voxtype is installed.
+step_dictation() {
+  say "Dictation (Voxtype)"
+
+  if pacman -Q voxtype-bin >/dev/null 2>&1; then
+    note "voxtype-bin already installed"
+  else
+    omarchy pkg add wtype voxtype-bin
+    note "installed (a model download follows)"
+  fi
+
+  # Never overwrite a config you've tuned since.
+  if [[ -e ~/.config/voxtype/config.toml ]]; then
+    note "keeping your Voxtype config"
+  else
+    mkdir -p ~/.config/voxtype
+    cp /usr/share/omarchy/default/voxtype/config.toml ~/.config/voxtype/
+    note "applied Omarchy's default Voxtype config"
+  fi
+
+  voxtype setup --download --no-post-install --quiet
+  # Switching the active binary to the Vulkan variant needs root, the same as
+  # Omarchy's own installer, so this is the one step that may ask for a
+  # password. Skipped once the GPU variant is already active.
+  if omarchy-hw-vulkan && voxtype info accel 2>/dev/null | grep -q 'State:.*cpu-only'; then
+    sudo voxtype setup gpu --enable
+    systemctl --user restart voxtype || true
+  fi
+  voxtype setup systemd
+  has hyprctl && hyprctl reload >/dev/null || true
+  note "ready (F9 to dictate, Super+Ctrl+X to toggle)"
 }
 
 # Google first (the browser session is used by every later login), then GitHub.
