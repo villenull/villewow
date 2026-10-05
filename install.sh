@@ -134,7 +134,7 @@ step_text_files() {
 
 # Omarchy's preinstall removal deletes these launchers, so put them back.
 step_clis() {
-  say "Claude, GitHub and OpenCode CLIs"
+  say "Claude, GitHub, OpenCode and Oh My Pi CLIs"
   local cli
   for cli in "${CLIS[@]}"; do
     if has "$cli"; then
@@ -144,13 +144,14 @@ step_clis() {
       note "$cli installed (downloads itself on first run)"
     fi
   done
+  ensure_omp
 }
 
 # Oh My Pi is the default agent. A binary in ~/.local/bin that isn't one of
 # mise's own wrappers counts as your install (Omarchy treats it the same way);
-# otherwise mise installs it from the same source Omarchy uses.
-step_omp() {
-  say "Oh My Pi"
+# otherwise mise installs it from the same source Omarchy uses. Not part of
+# CLIS, whose launchers would overwrite a binary you installed yourself.
+ensure_omp() {
   if [[ -x $HOME/.local/bin/omp ]] && ! grep -q '^mise use -g' "$HOME/.local/bin/omp"; then
     note "omp already installed (~/.local/bin/omp)"
   elif mise where github:can1357/oh-my-pi >/dev/null 2>&1; then
@@ -159,6 +160,12 @@ step_omp() {
     mise use -g github:can1357/oh-my-pi
     note "omp installed (downloads itself on first run)"
   fi
+}
+
+# Runs on its own too, so it stays a step as well as part of `clis`.
+step_omp() {
+  say "Oh My Pi"
+  ensure_omp
 }
 
 # Install the agent now, rather than relying on the first-run launcher.

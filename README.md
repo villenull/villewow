@@ -22,8 +22,8 @@ The script is safe to re-run, and each step can run on its own:
 | `link` | Links the configs below into place with GNU Stow (old files kept as `.bak.<time>`) |
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
-| `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers) |
-| `omp` | Oh My Pi, unless you already installed it yourself |
+| `clis` | Claude Code, GitHub CLI, OpenCode (via Omarchy's mise launchers), and Oh My Pi unless you already installed it yourself |
+| `omp` | Oh My Pi again, so it can also run on its own |
 | `default_agent` | Checks Oh My Pi is installed and selects it in Omarchy’s Setup → Defaults → Agent |
 | `opencode_settings` | OpenCode skips permission prompts (`"permission": "allow"`), and its Build agent runs Space Bunny Free at medium effort. Tool details are hidden: finished commands and their output don't show (toggle with ctrl+p → Toggle tool details) |
 | `paseo` | Latest official Paseo AppImage, desktop launcher and `paseo` command |
