@@ -12,7 +12,7 @@ DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins dictation auth drop_foot)
 
 # Linked file by file. Skill folders are linked whole (see step_link).
-STOW_PACKAGES=(hypr omarchy)
+STOW_PACKAGES=(hypr omarchy claude)
 STOW_SKILLS=(vill villnext)
 
 REMOVE_PKGS=(
@@ -107,6 +107,10 @@ step_link() {
     done
   done
 
+  # The panel reads Claude Code's saved sign-in, which lapses about every eight
+  # hours unless something refreshes it.
+  systemctl --user daemon-reload
+  systemctl --user enable --now claude-signin-refresh.timer
   git -C "$DOTFILES" config core.hooksPath .githooks
   has hyprctl && hyprctl reload >/dev/null || true
 }

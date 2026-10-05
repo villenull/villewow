@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Keep Claude Code's saved sign-in fresh, so the My Agents panel can read
+# live rate limits instead of "SIGN-IN EXPIRED".
+#
+# Claude Code's access token lasts about eight hours and only the CLI can mint
+# a new one. If a refresh is interrupted (terminal closed, agent killed), it
+# leaves ~/.claude/.oauth_refresh.lock behind and every later refresh refuses
+# with "another Claude Code process is refreshing it or exited mid-refresh".
+# Clearing a lock nobody is using is the whole point of this script.
+set -Eeuo pipefail
+
+CREDENTIALS="$HOME/.claude/.credentials.json"
+LOCK="$HOME/.claude/.oauth_refresh.lock"
+REFRESH_WITHIN_MS=$((2 * 60 * 60 * 1000))
+STALE_LOCK_MINUTES=10
+PROMPT_TIMEOUT=180
+
+now_ms() { echo $(($(date +%s) * 1000)); }
+expires_at() { jq -r '.claudeAiOauth.expiresAt // 0' "$CREDENTIALS" 2>/dev/null || echo 0; }
+when() { date -u -d "@$((${1} / 1000))" '+%Y-%m-%d %H:%M UTC'; }
+
+if [[ ! -f $CREDENTIALS ]]; then
+  echo "no credentials file yet: run \`claude auth login\`"
+  exit 0
+fi
+
+expiry=$(expires_at)
+if ((expiry - $(now_ms) > REFRESH_WITHIN_MS)); then
+  echo "still fresh, expires $(when "$expiry")"
+  exit 0
+fi
+
+# Only clear a lock that is empty and old enough that no live refresh owns it.
+if [[ -e $LOCK ]] && [[ -z $(ls -A "$LOCK" 2>/dev/null) ]] &&
+  [[ -n $(find "$LOCK" -maxdepth 0 -mmin "+$STALE_LOCK_MINUTES" 2>/dev/null) ]]; then
+  rm -rf "$LOCK"
+  echo "cleared a stale refresh lock"
+fi
+
+# A one-word prompt is what makes the CLI refresh and rewrite the credential
+# file; it costs one tiny request against the subscription.
+timeout "$PROMPT_TIMEOUT" claude -p "reply with exactly: ok" >/dev/null 2>&1 || true
+
+refreshed=$(expires_at)
+if ((refreshed > expiry)); then
+  echo "refreshed, expires $(when "$refreshed")"
+else
+  echo "refresh did not move the token; sign in again with \`claude auth login\`"
+  exit 1
+fi

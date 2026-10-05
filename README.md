@@ -38,6 +38,10 @@ What's left afterwards: Chromium, Files, the image viewer, Ghostty and Paseo.
 
 - `hypr` — mouse speed
 - `omarchy` — hides Learn, Trigger, Style and About from the Omarchy menu
+- `claude` — a systemd timer that keeps Claude Code's sign-in fresh, so the My
+  Agents panel shows live limits instead of "SIGN-IN EXPIRED". It also clears a
+  stale `~/.claude/.oauth_refresh.lock`, which is what makes refreshes fail after
+  one is interrupted.
 - `vill` — `/vill`, my orchestrator brief, Oh My Pi first with a short section
   for the few things only Paseo owns. The original, fully Paseo-based version is
   tagged `vill-paseo-v1`.

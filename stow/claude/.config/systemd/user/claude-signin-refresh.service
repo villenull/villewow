@@ -1,0 +1,6 @@
+[Unit]
+Description=Keep Claude Code's sign-in fresh for the usage panel
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/claude-refresh-signin
