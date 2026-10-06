@@ -9,11 +9,10 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files clis default_agent opencode_settings paseo paseo_settings paseo_skills shell_plugins dictation auth drop_foot)
+STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_desktop shell_plugins auth drop_foot)
 
-# Linked file by file. Skill folders are linked whole (see step_link).
-STOW_PACKAGES=(hypr omarchy claude)
-STOW_SKILLS=(vill villnext)
+# Linked file by file.
+STOW_PACKAGES=(hypr omarchy)
 
 REMOVE_PKGS=(
   evince gnome-disk-utility localsend mpv mpv-mpris nvim omarchy-nvim
@@ -24,12 +23,8 @@ CLIS=(claude gh opencode)
 
 TEXT_MIME_TYPES=(text/plain text/markdown text/x-markdown text/x-shellscript application/x-shellscript)
 
-PASEO_APPIMAGE="$HOME/.local/opt/Paseo-x86_64.AppImage"
-PASEO_SKILLS=(paseo paseo-advisor paseo-committee paseo-handoff paseo-help paseo-plugin)
-
 # id|git url
 SHELL_PLUGINS=(
-  "io.github.villenull.opencode-go-watcher|https://github.com/villenull/OpenCodeGoWatcher"
   "stappmus.activity-monitor|https://github.com/stappmus/omarchy-activity-monitor.git"
   "io.github.villenull.mimarchy|https://github.com/villenull/Mimarchy.git"
 )
@@ -89,28 +84,7 @@ step_link() {
       backup_unless_ours "$rel" "$stamp"
     done < <(cd "$DOTFILES/stow/$pkg" && find . -type f -printf '%P\n')
   done
-  for pkg in "${STOW_SKILLS[@]}"; do
-    backup_unless_ours ".agents/skills/$pkg" "$stamp"
-  done
-  # Link files one by one, except skill folders: OpenCode ignores symlinked
-  # SKILL.md files, so that one folder is linked whole.
-  mkdir -p ~/.agents/skills
   stow --no-folding -d "$DOTFILES/stow" -t "$HOME" -R "${STOW_PACKAGES[@]}"
-  stow -d "$DOTFILES/stow" -t "$HOME" -R "${STOW_SKILLS[@]}"
-
-  # Claude Code and Codex read skills from their own folders.
-  local dir skill
-  for dir in ~/.claude/skills ~/.codex/skills; do
-    mkdir -p "$dir"
-    for skill in "${STOW_SKILLS[@]}"; do
-      ln -sfn ~/.agents/skills/"$skill" "$dir/$skill"
-    done
-  done
-
-  # The panel reads Claude Code's saved sign-in, which lapses about every eight
-  # hours unless something refreshes it.
-  systemctl --user daemon-reload
-  systemctl --user enable --now claude-signin-refresh.timer
   git -C "$DOTFILES" config core.hooksPath .githooks
   has hyprctl && hyprctl reload >/dev/null || true
 }
@@ -136,9 +110,19 @@ step_text_files() {
   xdg-mime default chromium.desktop "${TEXT_MIME_TYPES[@]}"
 }
 
+# Every video and audio type the system knows about plays in Chromium (mpv is
+# removed by the debloat step).
+step_media_files() {
+  say "Video and audio files play in Chromium"
+  local types
+  mapfile -t types < <(grep -E '^(video|audio)/' /usr/share/mime/types)
+  xdg-mime default chromium.desktop "${types[@]}"
+  note "applied (${#types[@]} file types)"
+}
+
 # Omarchy's preinstall removal deletes these launchers, so put them back.
 step_clis() {
-  say "Claude, GitHub, OpenCode and Oh My Pi CLIs"
+  say "Claude, GitHub and OpenCode CLIs"
   local cli
   for cli in "${CLIS[@]}"; do
     if has "$cli"; then
@@ -148,185 +132,41 @@ step_clis() {
       note "$cli installed (downloads itself on first run)"
     fi
   done
-  ensure_omp
 }
 
-# Oh My Pi is the default agent. A binary in ~/.local/bin that isn't one of
-# mise's own wrappers counts as your install (Omarchy treats it the same way);
-# otherwise mise installs it from the same source Omarchy uses. Not part of
-# CLIS, whose launchers would overwrite a binary you installed yourself.
-ensure_omp() {
-  if [[ -x $HOME/.local/bin/omp ]] && ! grep -q '^mise use -g' "$HOME/.local/bin/omp"; then
-    note "omp already installed (~/.local/bin/omp)"
-  elif mise where github:can1357/oh-my-pi >/dev/null 2>&1; then
-    note "omp already installed (mise)"
-  else
-    mise use -g github:can1357/oh-my-pi
-    note "omp installed (downloads itself on first run)"
-  fi
-}
-
-# Install the agent now, rather than relying on the first-run launcher.
-# `omarchy default agent omp` also opens a session, so save its setting
-# directly to keep the setup script noninteractive. Omarchy launches it with
-# --auto-approve, so unattended launches never stop for a tool approval.
+# `omarchy default agent claude` also opens a session, so save its setting
+# directly to keep the setup script noninteractive.
 step_default_agent() {
-  say "Oh My Pi as the default AI agent"
-  has omp || { echo "Oh My Pi is missing: run ./install.sh clis first." >&2; exit 1; }
+  say "Claude Code as the default AI agent"
+  has claude || { echo "Claude Code is missing: run ./install.sh clis first." >&2; exit 1; }
   mkdir -p ~/.config/omarchy/defaults
-  printf '%s\n' omp >~/.config/omarchy/defaults/agent
+  printf '%s\n' claude >~/.config/omarchy/defaults/agent
   note "applied"
 }
 
-# OpenCode approves every permission request (same as always passing --auto),
-# and its Build agent runs Space Bunny at medium effort: an agent's variant
-# beats the one saved when you pick max in an orchestrator, so workers stay at
-# medium while that orchestrator session runs at max.
-# Tool details are hidden too (finished commands and their output don't show),
-# which is a saved UI toggle in OpenCode's state file, not its config.
-step_opencode_settings() {
-  say "OpenCode: skip permission prompts, workers at medium effort, tool details hidden"
-  merge_json ~/.config/opencode/opencode.json "$DOTFILES/opencode/opencode.json"
-  merge_json ~/.local/state/opencode/kv.json "$DOTFILES/opencode/kv.json"
-  note "applied"
-}
-
-# Merge our settings into a JSON settings file, keeping everything else in it.
-# A missing file starts as $3 (default: {}).
-merge_json() {
-  local target=$1 ours=$2 initial=${3:-'{}'}
-  mkdir -p "$(dirname "$target")"
-  [[ -s $target ]] || echo "$initial" >"$target"
-  jq -s '.[0] * .[1]' "$target" "$ours" >"$target.tmp"
-  mv "$target.tmp" "$target"
-}
-
-step_paseo() {
-  say "Paseo (latest AppImage)"
-  omarchy pkg add fuse2
-
-  local release tag url
-  release=$(curl -fsSL https://api.github.com/repos/getpaseo/paseo/releases/latest)
-  tag=$(jq -r .tag_name <<<"$release")
-  url=$(jq -r '.assets[] | select(.name | endswith("x86_64.AppImage")) | .browser_download_url' <<<"$release")
-
-  if [[ -x $PASEO_APPIMAGE && $(cat "$PASEO_APPIMAGE.version" 2>/dev/null) == "$tag" ]]; then
-    note "Paseo $tag already installed"
+# Omarchy's own package repo carries the official Linux build (Anthropic only
+# ships it as a .deb). It updates with the rest of the system.
+step_claude_desktop() {
+  say "Claude desktop app"
+  if pacman -Q claude-desktop >/dev/null 2>&1; then
+    note "already installed"
   else
-    mkdir -p "$(dirname "$PASEO_APPIMAGE")"
-    curl -fL --progress-bar -o "$PASEO_APPIMAGE.part" "$url"
-    chmod +x "$PASEO_APPIMAGE.part"
-    mv "$PASEO_APPIMAGE.part" "$PASEO_APPIMAGE"
-    echo "$tag" >"$PASEO_APPIMAGE.version"
-    note "installed Paseo $tag"
+    omarchy pkg add claude-desktop
   fi
-
-  mkdir -p ~/.local/bin
-  ln -sfn "$PASEO_APPIMAGE" ~/.local/bin/paseo
-
-  local icon=~/.local/share/icons/hicolor/128x128/apps/Paseo.png tmp
-  if [[ ! -f $icon ]]; then
-    tmp=$(mktemp -d)
-    (cd "$tmp" && "$PASEO_APPIMAGE" --appimage-extract Paseo.png >/dev/null)
-    install -Dm644 "$tmp/squashfs-root/Paseo.png" "$icon"
-    rm -rf "$tmp"
-  fi
-
-  mkdir -p ~/.local/share/applications
-  cat >~/.local/share/applications/Paseo.desktop <<EOF
-[Desktop Entry]
-Name=Paseo
-Exec=$PASEO_APPIMAGE --class=Paseo %U
-Terminal=false
-Type=Application
-Icon=Paseo
-StartupWMClass=Paseo
-Comment=Paseo desktop app
-MimeType=x-scheme-handler/paseo;
-Categories=Development;
-EOF
-}
-
-step_paseo_settings() {
-  say "Paseo settings"
-  merge_json ~/.paseo/config.json "$DOTFILES/paseo/config.json" '{"version": 1}'
-  merge_json ~/.config/Paseo/desktop-settings.json "$DOTFILES/paseo/desktop-settings.json" '{"version": 1}'
-  chmod 600 ~/.paseo/config.json
-  if paseo daemon status >/dev/null 2>&1; then
-    paseo reload >/dev/null
-  else
-    paseo start >/dev/null
-  fi
-  note "applied"
-}
-
-step_paseo_skills() {
-  say "Paseo orchestration skills"
-  local args=() skill
-  for skill in "${PASEO_SKILLS[@]}"; do args+=(-s "$skill"); done
-  mise x node@lts -- npx --yes skills add getpaseo/paseo -g -y \
-    -a claude-code -a codex -a opencode "${args[@]}"
 }
 
 step_shell_plugins() {
   say "Omarchy shell plugins"
-  local entry id url restart_shell=false
+  local entry id url
   for entry in "${SHELL_PLUGINS[@]}"; do
     id=${entry%%|*}
     url=${entry#*|}
     if [[ -f "$HOME/.config/omarchy/plugins/$id/manifest.json" ]]; then
       note "$id already installed"
-      if [[ $id == io.github.villenull.opencode-go-watcher ]] &&
-          [[ ! -x "$HOME/.config/omarchy/plugins/$id/bin/my-agents-migrate" ]]; then
-        omarchy plugin update "$id"
-        restart_shell=true
-      fi
     else
       omarchy plugin add "$url" --enable --yes
     fi
-    if [[ $id == io.github.villenull.opencode-go-watcher ]]; then
-      "$HOME/.config/omarchy/plugins/$id/bin/my-agents-migrate"
-      omarchy-shell shell rescanPlugins >/dev/null
-    fi
   done
-  if [[ $restart_shell == true ]]; then
-    omarchy restart shell
-  fi
-}
-
-# Dictation: hold F9, or toggle it with Super+Ctrl+X. Same packages Omarchy's
-# own installer uses; the model download and the systemd user service are the
-# parts that actually take effect, so they run even when Voxtype is installed.
-step_dictation() {
-  say "Dictation (Voxtype)"
-
-  if pacman -Q voxtype-bin >/dev/null 2>&1; then
-    note "voxtype-bin already installed"
-  else
-    omarchy pkg add wtype voxtype-bin
-    note "installed (a model download follows)"
-  fi
-
-  # Never overwrite a config you've tuned since.
-  if [[ -e ~/.config/voxtype/config.toml ]]; then
-    note "keeping your Voxtype config"
-  else
-    mkdir -p ~/.config/voxtype
-    cp /usr/share/omarchy/default/voxtype/config.toml ~/.config/voxtype/
-    note "applied Omarchy's default Voxtype config"
-  fi
-
-  voxtype setup --download --no-post-install --quiet
-  # Switching the active binary to the Vulkan variant needs root, the same as
-  # Omarchy's own installer, so this is the one step that may ask for a
-  # password. Skipped once the GPU variant is already active.
-  if omarchy-hw-vulkan && voxtype info accel 2>/dev/null | grep -q 'State:.*cpu-only'; then
-    sudo voxtype setup gpu --enable
-    systemctl --user restart voxtype || true
-  fi
-  voxtype setup systemd
-  has hyprctl && hyprctl reload >/dev/null || true
-  note "ready (F9 to dictate, Super+Ctrl+X to toggle)"
 }
 
 # Google first (the browser session is used by every later login), then GitHub.
@@ -345,27 +185,24 @@ step_auth() {
     gh auth setup-git
   fi
 
-  if claude auth status --json 2>/dev/null | jq -e .loggedIn >/dev/null; then
-    note "3/5 Claude: already logged in"
-  else
-    note "3/5 Claude"
-    claude auth login
-  fi
-
   if opencode auth list 2>/dev/null | grep -q 'OpenCode'; then
-    note "4/5 OpenCode: already logged in"
+    note "3/5 OpenCode: already logged in"
   else
-    note "4/5 OpenCode: choose OpenCode Go and paste your key from opencode.ai"
+    note "3/5 OpenCode: choose OpenCode Go and paste your key from opencode.ai"
     opencode auth login
   fi
 
-  # Last login: the default agent, so a fresh install ends ready to use.
-  if omp usage --json 2>/dev/null | jq -e '.reports | length > 0' >/dev/null; then
-    note "5/5 Oh My Pi: already logged in"
+  # Claude last: it's the default agent, so a fresh install ends ready to use.
+  if claude auth status --json 2>/dev/null | jq -e .loggedIn >/dev/null; then
+    note "4/5 Claude Code: already logged in"
   else
-    note "5/5 Oh My Pi: sign in to the providers you want (Anthropic, OpenAI Codex, OpenCode Go)"
-    omp login
+    note "4/5 Claude Code"
+    claude auth login
   fi
+
+  note "5/5 Claude desktop: sign in in the window that opens (skip if it opens signed in)."
+  claude-desktop >/dev/null 2>&1 &
+  wait_for_user "Signed in to the Claude app?" || note "skipped Claude desktop"
 }
 
 # Last, so there is always a working terminal while the script runs.
