@@ -1,0 +1,13 @@
+{
+  "globalShortcut": "",
+  "preferences": {
+    "sidebarMode": "epitaxy",
+    "menuBarEnabled": false,
+    "keepAwakeEnabled": true,
+    "coworkWebSearchEnabled": true,
+    "coworkScheduledTasksEnabled": true,
+    "ccdScheduledTasksEnabled": true,
+    "coworkPreferredBrowser": "built_in",
+    "coworkBrowserToolsEnabled": true
+  }
+}

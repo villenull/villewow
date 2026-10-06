@@ -170,6 +170,15 @@ step_claude_desktop() {
   else
     omarchy pkg add claude-desktop
   fi
+
+  # The app rewrites this file while it runs, so merge only while it's closed.
+  if pgrep -f '^/usr/lib/claude-desktop/claude-desktop' >/dev/null; then
+    note "quit the Claude app, then run ./install.sh claude_desktop to apply its settings"
+  else
+    merge_json ~/.config/Claude/claude_desktop_config.json "$DOTFILES/claude-desktop/claude_desktop_config.json"
+    chmod 600 ~/.config/Claude/claude_desktop_config.json
+    note "settings applied"
+  fi
 }
 
 step_shell_plugins() {
