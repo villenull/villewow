@@ -1,0 +1,9 @@
+{
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "theme": "auto",
+  "voiceEnabled": true,
+  "skipDangerousModePermissionPrompt": true
+}

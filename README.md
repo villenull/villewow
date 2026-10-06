@@ -25,6 +25,7 @@ The script is safe to re-run, and each step can run on its own:
 | `media_files` | Video and audio files play in Chromium |
 | `clis` | Claude Code, GitHub CLI and OpenCode (via Omarchy's mise launchers) |
 | `default_agent` | Checks Claude Code is installed and selects it in Omarchy's Setup → Defaults → Agent |
+| `claude_settings` | Claude Code settings (`claude/settings.json`): automatic theme, voice input (hold to talk), no warning before bypass-permissions mode. Merged into your file, so anything else in it stays |
 | `claude_desktop` | The Claude desktop app (Chat, Cowork and Claude Code), from Omarchy's package repo |
 | `shell_plugins` | Omarchy shell plugins: Activity Monitor, Mimarchy |
 | `auth` | Guided logins, Claude last: Google (Chromium), GitHub, OpenCode, Claude Code, the Claude desktop app |

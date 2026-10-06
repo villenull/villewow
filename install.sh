@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_desktop shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins auth drop_foot)
 
 # Linked file by file.
 STOW_PACKAGES=(hypr omarchy)
@@ -142,6 +142,23 @@ step_default_agent() {
   mkdir -p ~/.config/omarchy/defaults
   printf '%s\n' claude >~/.config/omarchy/defaults/agent
   note "applied"
+}
+
+# Merged into Claude Code's own settings file, which it also writes to, so
+# anything else saved there is kept.
+step_claude_settings() {
+  say "Claude Code settings"
+  merge_json ~/.claude/settings.json "$DOTFILES/claude/settings.json"
+  note "applied"
+}
+
+# Merge our settings into a JSON settings file, keeping everything else in it.
+merge_json() {
+  local target=$1 ours=$2
+  mkdir -p "$(dirname "$target")"
+  [[ -s $target ]] || echo '{}' >"$target"
+  jq -s '.[0] * .[1]' "$target" "$ours" >"$target.tmp"
+  mv "$target.tmp" "$target"
 }
 
 # Omarchy's own package repo carries the official Linux build (Anthropic only
