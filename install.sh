@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins auth drop_foot)
+STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins crash_notifications auth drop_foot)
 
 # Linked file by file.
 STOW_PACKAGES=(hypr omarchy)
@@ -193,6 +193,15 @@ step_shell_plugins() {
       omarchy plugin add "$url" --enable --yes
     fi
   done
+}
+
+# Omarchy's "Process crashed: ... Click to diagnose with AI" toasts. Same flag
+# as `omarchy toggle crash-capture`, set directly so re-runs never turn it back on.
+step_crash_notifications() {
+  say "Crash notifications off"
+  omarchy-toggle crash-capture-off on
+  systemctl --user stop omarchy-crash-watch.service 2>/dev/null || true
+  note "applied"
 }
 
 # Google first (the browser session is used by every later login), then GitHub.
