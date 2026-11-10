@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins mimarchy_access crash_notifications auth drop_foot)
+STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins mimarchy_access fan_driver crash_notifications auth drop_foot)
 
 # Linked file by file.
 STOW_PACKAGES=(hypr omarchy)
@@ -266,6 +266,35 @@ step_mimarchy_access() {
   sudo udevadm control --reload-rules
   sudo udevadm trigger --action=add --subsystem-match=hidraw
   note "applied (if the cooler display stays off, reboot once)"
+}
+
+# CPU fan speed for Mimarchy's cooler display comes from the nct6687 sensor
+# chip, whose driver isn't in the kernel. It's built from the AUR with DKMS, so
+# kernel updates rebuild it. `force=1` is needed because the driver doesn't
+# list this board; `acpi_enforce_resources=lax` lets it reach the chip. The
+# boot options go in a limine drop-in, the same way Omarchy adds its own.
+FAN_DRIVER_CMDLINE='KERNEL_CMDLINE[default]+=" nct6687.force=1 acpi_enforce_resources=lax"'
+
+step_fan_driver() {
+  say "CPU fan speed sensor driver (nct6687)"
+  omarchy pkg add dkms
+  omarchy pkg aur add nct6687d-dkms-git
+
+  local modules=/etc/modules-load.d/nct6687.conf
+  [[ $(cat "$modules" 2>/dev/null) == nct6687 ]] ||
+    echo nct6687 | sudo tee "$modules" >/dev/null
+
+  local entry=/etc/limine-entry-tool.d/nct6687.conf
+  if [[ $(cat "$entry" 2>/dev/null) != "$FAN_DRIVER_CMDLINE" ]]; then
+    echo "$FAN_DRIVER_CMDLINE" | sudo tee "$entry" >/dev/null
+    sudo limine-update
+  fi
+
+  if grep -qw nct6687.force=1 /proc/cmdline && lsmod | grep -qw nct6687; then
+    note "already done"
+  else
+    note "installed: reboot to start reading the fan speed"
+  fi
 }
 
 # Omarchy's "Process crashed: ... Click to diagnose with AI" toasts. Same flag

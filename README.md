@@ -31,6 +31,7 @@ to `~/.local/state/villewow/install.log`.
 | `claude_desktop` | The Claude desktop app (Chat, Cowork and Claude Code), from Omarchy's package repo, and its settings (`claude-desktop/`): Quick Entry shortcut off, menu bar off, keep computer awake, Cowork web search, browser tools in the built-in browser, and scheduled tasks. Merged only while the app is closed |
 | `shell_plugins` | Omarchy shell plugins: Activity Monitor, Mimarchy |
 | `mimarchy_access` | Lets Mimarchy reach the CPU fan LEDs and the cooler display (a udev rule granting the logged-in user access; the same two lines as Mimarchy's README) |
+| `fan_driver` | CPU fan speed for Mimarchy's cooler display: the `nct6687d` driver from the AUR (rebuilt with DKMS on kernel updates), loaded at boot, plus the two boot options it needs. Takes effect after a reboot |
 | `crash_notifications` | Turns off Omarchy's "Process crashed — Click to diagnose with AI" notifications (same as `omarchy toggle crash-capture`) |
 | `auth` | Guided logins, Claude last: Google (Chromium), GitHub, Claude Code, the Claude desktop app |
 | `drop_foot` | Removes Foot, last, so a terminal is always available. If something still needs it, it stays installed but hidden from the launcher |
