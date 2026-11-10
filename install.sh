@@ -18,7 +18,7 @@ STOW_PACKAGES=(hypr omarchy)
 # uses) is kept and only hidden from the app launcher.
 REMOVE_PKGS=(
   evince gnome-disk-utility localsend mpv mpv-mpris neovim omarchy-nvim
-  sushi system-config-printer tensaku btop
+  sushi system-config-printer tensaku btop gliff disktree-bin
 )
 
 CLIS=(claude gh)
@@ -64,6 +64,11 @@ step_debloat() {
     note "preinstalls already removed"
   else
     omarchy remove preinstalls
+  fi
+  # Superwhisper dictation: Omarchy's remover also takes out its bar panel,
+  # shortcuts and service. Omasnap stays: it's the Print Screen tool.
+  if pacman -Q superwhisper-bin >/dev/null 2>&1; then
+    omarchy remove dictation superwhisper
   fi
   drop_unneeded "${REMOVE_PKGS[@]}"
 }

@@ -20,7 +20,7 @@ to `~/.local/state/villewow/install.log`.
 | Step | What |
 |------|------|
 | `terminal` | Installs Ghostty and makes it the default terminal |
-| `debloat` | Omarchy's `remove preinstalls`, plus Evince, Disks, LocalSend, mpv, Neovim, Sushi, printer settings, Tensaku, btop. Anything Omarchy itself still needs (mpv, used by its wallpaper engine) stays installed but is hidden from the launcher |
+| `debloat` | Omarchy's `remove preinstalls`, plus Evince, Disks, LocalSend, mpv, Neovim, Sushi, printer settings, Tensaku, btop, Gliff, Disktree, and Superwhisper dictation (Omasnap stays: it's the Print Screen tool). Anything Omarchy itself still needs (mpv, used by its wallpaper engine) stays installed but is hidden from the launcher |
 | `link` | Links the configs below into place with GNU Stow (old files kept as `.bak.<time>`) |
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
@@ -32,7 +32,7 @@ to `~/.local/state/villewow/install.log`.
 | `shell_plugins` | Omarchy shell plugins: Activity Monitor, Mimarchy |
 | `crash_notifications` | Turns off Omarchy's "Process crashed — Click to diagnose with AI" notifications (same as `omarchy toggle crash-capture`) |
 | `auth` | Guided logins, Claude last: Google (Chromium), GitHub, Claude Code, the Claude desktop app |
-| `drop_foot` | Removes Foot, last, so a terminal is always available. If something still needs it (Superwhisper does), it stays installed but hidden from the launcher |
+| `drop_foot` | Removes Foot, last, so a terminal is always available. If something still needs it, it stays installed but hidden from the launcher |
 
 What's left afterwards: Chromium, Files, the image viewer, Ghostty and Claude.
 
