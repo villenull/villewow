@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins crash_notifications auth drop_foot)
+STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins mimarchy_access crash_notifications auth drop_foot)
 
 # Linked file by file.
 STOW_PACKAGES=(hypr omarchy)
@@ -246,6 +246,26 @@ step_shell_plugins() {
       omarchy plugin add "$url" --enable --yes
     fi
   done
+}
+
+# Mimarchy drives the motherboard's Aura chip (CPU fan LEDs) and the cooler
+# display over hidraw, which is root-only until this rule grants the logged-in
+# user access. The rule is spelled out here, as in Mimarchy's README, so root
+# never copies a file from a user-writable folder. The GPU needs no rule.
+MIMARCHY_RULES='SUBSYSTEM=="hidraw", ATTRS{idVendor}=="5131", ATTRS{idProduct}=="2007", TAG+="uaccess", RUN{builtin}+="uaccess", GROUP="input", MODE="0660"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0b05", ATTRS{idProduct}=="19af", TAG+="uaccess", RUN{builtin}+="uaccess", GROUP="input", MODE="0660"'
+
+step_mimarchy_access() {
+  say "Mimarchy access to the CPU fan LEDs and cooler display"
+  local rules=/etc/udev/rules.d/99-mimarchy.rules
+  if [[ $(cat "$rules" 2>/dev/null) == "$MIMARCHY_RULES" ]]; then
+    note "already done"
+    return
+  fi
+  printf '%s\n' "$MIMARCHY_RULES" | sudo tee "$rules" >/dev/null
+  sudo udevadm control --reload-rules
+  sudo udevadm trigger --action=add --subsystem-match=hidraw
+  note "applied (if the cooler display stays off, reboot once)"
 }
 
 # Omarchy's "Process crashed: ... Click to diagnose with AI" toasts. Same flag
