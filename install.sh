@@ -284,8 +284,10 @@ step_auth() {
 # Last, so there is always a working terminal while the script runs.
 step_drop_foot() {
   say "Removing Foot"
-  omarchy pkg drop foot
+  # Omarchy's own launcher entries for Foot. If Foot has to stay (Superwhisper
+  # needs it), drop_unneeded puts hidden ones back.
   rm -f ~/.local/share/applications/foot*.desktop
+  drop_unneeded foot
 }
 
 # --- main --------------------------------------------------------------------

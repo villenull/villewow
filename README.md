@@ -32,7 +32,7 @@ to `~/.local/state/villewow/install.log`.
 | `shell_plugins` | Omarchy shell plugins: Activity Monitor, Mimarchy |
 | `crash_notifications` | Turns off Omarchy's "Process crashed — Click to diagnose with AI" notifications (same as `omarchy toggle crash-capture`) |
 | `auth` | Guided logins, Claude last: Google (Chromium), GitHub, Claude Code, the Claude desktop app |
-| `drop_foot` | Removes Foot, last, so a terminal is always available |
+| `drop_foot` | Removes Foot, last, so a terminal is always available. If something still needs it (Superwhisper does), it stays installed but hidden from the launcher |
 
 What's left afterwards: Chromium, Files, the image viewer, Ghostty and Claude.
 
