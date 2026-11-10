@@ -14,8 +14,10 @@ STEPS=(terminal debloat link chromium text_files media_files clis default_agent 
 # Linked file by file.
 STOW_PACKAGES=(hypr omarchy)
 
+# Anything Omarchy itself still needs (like mpv, which its wallpaper engine
+# uses) is kept and only hidden from the app launcher.
 REMOVE_PKGS=(
-  evince gnome-disk-utility localsend mpv mpv-mpris nvim omarchy-nvim
+  evince gnome-disk-utility localsend mpv mpv-mpris neovim omarchy-nvim
   sushi system-config-printer tensaku btop
 )
 
@@ -29,8 +31,12 @@ SHELL_PLUGINS=(
   "io.github.villenull.mimarchy|https://github.com/villenull/Mimarchy.git"
 )
 
-say() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
-note() { printf '    %s\n' "$*"; }
+LOG=~/.local/state/villewow/install.log
+mkdir -p "$(dirname "$LOG")"
+
+log() { printf '[%(%F %T)T] %s\n' -1 "$*" >>"$LOG"; }
+say() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; log "$*"; }
+note() { printf '    %s\n' "$*"; log "  $*"; }
 has() { command -v "$1" >/dev/null 2>&1; }
 
 # Wait for the user to finish something in the browser. Returns 1 if skipped.
@@ -59,7 +65,49 @@ step_debloat() {
   else
     omarchy remove preinstalls
   fi
-  omarchy pkg drop "${REMOVE_PKGS[@]}"
+  drop_unneeded "${REMOVE_PKGS[@]}"
+}
+
+# Installed packages that depend on $1.
+required_by() {
+  LC_ALL=C pacman -Qi "$1" | awk '
+    /^Required By/ { f = 1; sub(/^[^:]*: */, "") }
+    f && /^[A-Z][A-Za-z ]*:/ && !/^Required By/ { exit }
+    f { print }' | tr -s ' ' '\n' | grep -vx -e None -e '' || true
+}
+
+# Remove the named packages, except ones something outside the list still
+# needs. Those stay installed, hidden from the app launcher.
+drop_unneeded() {
+  local -A drop=()
+  local pkg dep changed=1 entry
+  for pkg; do pacman -Qq "$pkg" >/dev/null 2>&1 && drop[$pkg]=1; done
+
+  # Repeat until stable: keeping one package can mean keeping what it needs.
+  while ((changed)); do
+    changed=0
+    for pkg in "${!drop[@]}"; do
+      for dep in $(required_by "$pkg"); do
+        if [[ -z ${drop[$dep]:-} ]]; then
+          unset "drop[$pkg]"
+          changed=1
+          note "keeping $pkg (needed by $dep), hidden from the launcher"
+          while IFS= read -r entry; do
+            mkdir -p ~/.local/share/applications
+            printf '[Desktop Entry]\nType=Application\nName=%s\nNoDisplay=true\n' "$pkg" \
+              >~/.local/share/applications/"${entry##*/}"
+          done < <(pacman -Qlq "$pkg" | grep '^/usr/share/applications/.*\.desktop$' || true)
+          break
+        fi
+      done
+    done
+  done
+
+  if ((${#drop[@]})); then
+    omarchy pkg drop "${!drop[@]}"
+  else
+    note "nothing to remove"
+  fi
 }
 
 # Move $HOME/$1 aside as .bak.$2, unless it is missing, a link, or already
@@ -262,6 +310,23 @@ selected=("$@")
 
 for step in "${selected[@]}"; do
   declare -F "step_$step" >/dev/null || { echo "Unknown step: $step (see --list)"; exit 1; }
+done
+
+# On failure, say which step broke and how to pick up from there.
+on_error() {
+  local status=$? cmd=$BASH_COMMAND line=${BASH_LINENO[0]}
+  trap - ERR
+  log "FAILED in step $step (line $line, exit $status): $cmd"
+  printf '\n\033[1;31m==> Step "%s" failed: %s\033[0m\n' "$step" "$cmd" >&2
+  printf '    Log: %s\n    Fix it, then resume with:\n    %s %s\n' \
+    "$LOG" "$DOTFILES/install.sh" "${selected[*]:i}" >&2
+  exit "$status"
+}
+trap on_error ERR
+
+log "--- install.sh ${selected[*]}"
+for ((i = 0; i < ${#selected[@]}; i++)); do
+  step=${selected[i]}
   "step_$step"
 done
 

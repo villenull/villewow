@@ -11,14 +11,16 @@ git clone https://github.com/villenull/villewow ~/.dotfiles
 ```
 
 The script is safe to re-run, and each step can run on its own:
-`./install.sh --list`, then e.g. `./install.sh link auth`.
+`./install.sh --list`, then e.g. `./install.sh link auth`. If a step fails, the
+script names it and prints the command to resume from there; each run is logged
+to `~/.local/state/villewow/install.log`.
 
 ## What it does
 
 | Step | What |
 |------|------|
 | `terminal` | Installs Ghostty and makes it the default terminal |
-| `debloat` | Omarchy's `remove preinstalls`, plus Evince, Disks, LocalSend, mpv, Neovim, Sushi, printer settings, Tensaku, btop |
+| `debloat` | Omarchy's `remove preinstalls`, plus Evince, Disks, LocalSend, mpv, Neovim, Sushi, printer settings, Tensaku, btop. Anything Omarchy itself still needs (mpv, used by its wallpaper engine) stays installed but is hidden from the launcher |
 | `link` | Links the configs below into place with GNU Stow (old files kept as `.bak.<time>`) |
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
