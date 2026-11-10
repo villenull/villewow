@@ -6,7 +6,7 @@ install. It only holds what I change; Omarchy's own defaults stay Omarchy's.
 ## Install
 
 ```bash
-git clone https://github.com/villenull/villewow ~/.dotfiles
+git clone https://github.com/villenull/villewow ~/.dotfiles || git -C ~/.dotfiles pull
 ~/.dotfiles/install.sh
 ```
 
