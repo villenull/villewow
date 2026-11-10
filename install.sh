@@ -9,7 +9,7 @@ set -Eeuo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins mimarchy_access fan_driver crash_notifications auth drop_foot)
+STEPS=(terminal debloat link chromium text_files media_files clis default_agent claude_settings claude_desktop shell_plugins bar mimarchy_access fan_driver crash_notifications auth drop_foot)
 
 # Linked file by file.
 STOW_PACKAGES=(hypr omarchy)
@@ -246,6 +246,26 @@ step_shell_plugins() {
       omarchy plugin add "$url" --enable --yes
     fi
   done
+}
+
+# Bar widgets Omarchy ships that I don't want. omarchy.elsewhen is the world
+# clock next to the weather. `omarchy bar` can add and move widgets but not
+# remove them, so this edits shell.json through Omarchy's own helper, which
+# writes the file atomically and reloads the bar.
+BAR_REMOVE=(omarchy.elsewhen)
+
+step_bar() {
+  say "Bar widgets"
+  local ids
+  ids=$(printf '%s\n' "${BAR_REMOVE[@]}" | jq -R . | jq -sc .)
+  (
+    source omarchy-shell-config
+    commit "$NORMALIZE | .bar.layout |= with_entries(
+      if (.value | type) == \"array\"
+      then .value |= map(select((.id // \"\") as \$id | \$ids | any(. == \$id) | not))
+      else . end)" --argjson ids "$ids"
+  )
+  note "removed: ${BAR_REMOVE[*]}"
 }
 
 # Mimarchy drives the motherboard's Aura chip (CPU fan LEDs) and the cooler
