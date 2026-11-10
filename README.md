@@ -25,13 +25,13 @@ to `~/.local/state/villewow/install.log`.
 | `chromium` | Omarchy's Chromium Google-account support |
 | `text_files` | `.txt`, `.md` and `.sh` files open in Chromium; nano is the editor for things that need one (git commit messages, Omarchy's edit-config entries) |
 | `media_files` | Video and audio files play in Chromium |
-| `clis` | Claude Code, GitHub CLI and OpenCode (via Omarchy's mise launchers) |
+| `clis` | Claude Code and GitHub CLI (via Omarchy's mise launchers) |
 | `default_agent` | Checks Claude Code is installed and selects it in Omarchy's Setup → Defaults → Agent |
 | `claude_settings` | Claude Code settings (`claude/settings.json`): automatic theme, voice input (hold to talk), no warning before bypass-permissions mode. Merged into your file, so anything else in it stays |
 | `claude_desktop` | The Claude desktop app (Chat, Cowork and Claude Code), from Omarchy's package repo, and its settings (`claude-desktop/`): Quick Entry shortcut off, menu bar off, keep computer awake, Cowork web search, browser tools in the built-in browser, and scheduled tasks. Merged only while the app is closed |
 | `shell_plugins` | Omarchy shell plugins: Activity Monitor, Mimarchy |
 | `crash_notifications` | Turns off Omarchy's "Process crashed — Click to diagnose with AI" notifications (same as `omarchy toggle crash-capture`) |
-| `auth` | Guided logins, Claude last: Google (Chromium), GitHub, OpenCode, Claude Code, the Claude desktop app |
+| `auth` | Guided logins, Claude last: Google (Chromium), GitHub, Claude Code, the Claude desktop app |
 | `drop_foot` | Removes Foot, last, so a terminal is always available |
 
 What's left afterwards: Chromium, Files, the image viewer, Ghostty and Claude.

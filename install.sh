@@ -21,7 +21,7 @@ REMOVE_PKGS=(
   sushi system-config-printer tensaku btop
 )
 
-CLIS=(claude gh opencode)
+CLIS=(claude gh)
 
 TEXT_MIME_TYPES=(text/plain text/markdown text/x-markdown text/x-shellscript application/x-shellscript)
 
@@ -170,7 +170,7 @@ step_media_files() {
 
 # Omarchy's preinstall removal deletes these launchers, so put them back.
 step_clis() {
-  say "Claude, GitHub and OpenCode CLIs"
+  say "Claude and GitHub CLIs"
   local cli
   for cli in "${CLIS[@]}"; do
     if has "$cli"; then
@@ -256,34 +256,27 @@ step_crash_notifications() {
 step_auth() {
   say "Logins"
 
-  note "1/5 Google: sign in to Chromium (profile icon, top right)."
+  note "1/4 Google: sign in to Chromium (profile icon, top right)."
   chromium --new-window https://accounts.google.com/ >/dev/null 2>&1 &
   wait_for_user "Signed in to Google?" || note "skipped Google"
 
   if gh auth status >/dev/null 2>&1; then
-    note "2/5 GitHub: already logged in"
+    note "2/4 GitHub: already logged in"
   else
-    note "2/5 GitHub"
+    note "2/4 GitHub"
     gh auth login --hostname github.com --git-protocol https --web
     gh auth setup-git
   fi
 
-  if opencode auth list 2>/dev/null | grep -q 'OpenCode'; then
-    note "3/5 OpenCode: already logged in"
-  else
-    note "3/5 OpenCode: choose OpenCode Go and paste your key from opencode.ai"
-    opencode auth login
-  fi
-
   # Claude last: it's the default agent, so a fresh install ends ready to use.
   if claude auth status --json 2>/dev/null | jq -e .loggedIn >/dev/null; then
-    note "4/5 Claude Code: already logged in"
+    note "3/4 Claude Code: already logged in"
   else
-    note "4/5 Claude Code"
+    note "3/4 Claude Code"
     claude auth login
   fi
 
-  note "5/5 Claude desktop: sign in in the window that opens (skip if it opens signed in)."
+  note "4/4 Claude desktop: sign in in the window that opens (skip if it opens signed in)."
   claude-desktop >/dev/null 2>&1 &
   wait_for_user "Signed in to the Claude app?" || note "skipped Claude desktop"
 }
